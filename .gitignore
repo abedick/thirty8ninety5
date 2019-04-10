@@ -1,3 +1,5 @@
+gmbh/
+gmbh-deploy/
 bin/*
 services/users/bin
 services/webserver/bin
