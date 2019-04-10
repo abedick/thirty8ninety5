@@ -1,0 +1,63 @@
+[19/04/10 10:54] [procm]                     _                 
+[19/04/10 10:54] [procm]   _  ._ _  |_  |_| |_) ._ _   _ |\/| 
+[19/04/10 10:54] [procm]  (_| | | | |_) | | |   | (_) (_ |  |  
+[19/04/10 10:54] [procm]   _|                                  
+[19/04/10 10:54] [procm] version=0.9.5
+[19/04/10 10:54] [procm] env=M; address=localhost:59500
+[19/04/10 10:54] [procm] procm is in managed mode; overriding sigusr2; ignoring sigint
+[19/04/10 10:54] [procm] <- UpdateRegistration; serviceUpdate=Request:"remote.register" Message:"M" Env:"M" 
+[19/04/10 10:54] [procm] registering new remote
+[19/04/10 10:54] [procm] <- UpdateRegistration; serviceUpdate=Request:"remote.register" Message:"M" Env:"M" 
+[19/04/10 10:54] [procm] registering new remote
+[19/04/10 10:54] [procm] added new router to map=r100
+[19/04/10 10:54] [procm] attached new remote; id=r100; address=localhost:59504
+[19/04/10 10:54] [procm] sent registration response
+[19/04/10 10:54] [procm] added new router to map=r101
+[19/04/10 10:54] [procm] attached new remote; id=r101; address=localhost:59506
+[19/04/10 10:54] [procm] sent registration response
+
+[19/04/10 10:54] [procm] shutting down...
+[19/04/10 10:54] [procm] sending shutdown notice to r100
+[19/04/10 10:54] [procm] sending shutdown notice to r101
+[19/04/10 10:57] [procm]                     _                 
+[19/04/10 10:57] [procm]   _  ._ _  |_  |_| |_) ._ _   _ |\/| 
+[19/04/10 10:57] [procm]  (_| | | | |_) | | |   | (_) (_ |  |  
+[19/04/10 10:57] [procm]   _|                                  
+[19/04/10 10:57] [procm] version=0.9.5
+[19/04/10 10:57] [procm] env=M; address=localhost:59500
+[19/04/10 10:57] [procm] procm is in managed mode; overriding sigusr2; ignoring sigint
+[19/04/10 10:57] [procm] <- UpdateRegistration; serviceUpdate=Request:"remote.register" Message:"M" Env:"M" 
+[19/04/10 10:57] [procm] registering new remote
+[19/04/10 10:57] [procm] added new router to map=r100
+[19/04/10 10:57] [procm] attached new remote; id=r100; address=localhost:59504
+[19/04/10 10:57] [procm] sent registration response
+[19/04/10 10:57] [procm] <- UpdateRegistration; serviceUpdate=Request:"remote.register" Message:"M" Env:"M" 
+[19/04/10 10:57] [procm] registering new remote
+[19/04/10 10:57] [procm] added new router to map=r101
+[19/04/10 10:57] [procm] attached new remote; id=r101; address=localhost:59506
+[19/04/10 10:57] [procm] sent registration response
+
+[19/04/10 10:57] [procm] shutting down...
+[19/04/10 10:57] [procm] sending shutdown notice to r101
+[19/04/10 10:57] [procm] sending shutdown notice to r100
+[19/04/10 10:57] [procm]                     _                 
+[19/04/10 10:57] [procm]   _  ._ _  |_  |_| |_) ._ _   _ |\/| 
+[19/04/10 10:57] [procm]  (_| | | | |_) | | |   | (_) (_ |  |  
+[19/04/10 10:57] [procm]   _|                                  
+[19/04/10 10:57] [procm] version=0.9.5
+[19/04/10 10:57] [procm] env=M; address=localhost:59500
+[19/04/10 10:57] [procm] procm is in managed mode; overriding sigusr2; ignoring sigint
+[19/04/10 10:57] [procm] <- UpdateRegistration; serviceUpdate=Request:"remote.register" Message:"M" Env:"M" 
+[19/04/10 10:57] [procm] registering new remote
+[19/04/10 10:57] [procm] added new router to map=r100
+[19/04/10 10:57] [procm] attached new remote; id=r100; address=localhost:59504
+[19/04/10 10:57] [procm] sent registration response
+[19/04/10 10:57] [procm] <- UpdateRegistration; serviceUpdate=Request:"remote.register" Message:"M" Env:"M" 
+[19/04/10 10:57] [procm] registering new remote
+[19/04/10 10:57] [procm] added new router to map=r101
+[19/04/10 10:57] [procm] attached new remote; id=r101; address=localhost:59506
+[19/04/10 10:57] [procm] sent registration response
+
+[19/04/10 11:00] [procm] shutting down...
+[19/04/10 11:00] [procm] sending shutdown notice to r101
+[19/04/10 11:00] [procm] sending shutdown notice to r100

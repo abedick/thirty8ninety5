@@ -1,0 +1,51 @@
+[19/04/10 10:54] [repm]                     _                       
+[19/04/10 10:54] [repm]   _  ._ _  |_  |_| |_)  _  ._ _   _ _|_  _  
+[19/04/10 10:54] [repm]  (_| | | | |_) | | | \ (/_ | | | (_) |_ (/_ 
+[19/04/10 10:54] [repm]   _|                                          
+[19/04/10 10:54] [repm] started, time=Apr 10 10:54:42
+[19/04/10 10:54] [repm] env=M; ProcmAddress=localhost:59500; hostname=localhost
+[19/04/10 10:54] [repm] remote is in managed mode; using sigusr2; ignoring sigusr1, sigint
+[19/04/10 10:54] [repm] attempting to connect to core @ localhost:59500
+[19/04/10 10:54] [repm] registration; id=r100; address=localhost:59504; fingerprint=bin13gjmvbampd6f00m0
+[19/04/10 10:54] [repm] connected
+[19/04/10 10:54] [repm] added s100
+[19/04/10 10:54] [repm] service started with pid=27832
+[19/04/10 10:54] [repm] -> Request:"gmbh.shutdown" 
+[19/04/10 10:54] [repm] -> Request:"core.shutdown" 
+[19/04/10 10:54] [repm] disconnecting
+[19/04/10 10:54] [repm] sending notify to core
+[19/04/10 10:54] [repm] shutdown complete...
+[19/04/10 10:57] [repm]                     _                       
+[19/04/10 10:57] [repm]   _  ._ _  |_  |_| |_)  _  ._ _   _ _|_  _  
+[19/04/10 10:57] [repm]  (_| | | | |_) | | | \ (/_ | | | (_) |_ (/_ 
+[19/04/10 10:57] [repm]   _|                                          
+[19/04/10 10:57] [repm] started, time=Apr 10 10:57:33
+[19/04/10 10:57] [repm] env=M; ProcmAddress=localhost:59500; hostname=localhost
+[19/04/10 10:57] [repm] remote is in managed mode; using sigusr2; ignoring sigusr1, sigint
+[19/04/10 10:57] [repm] attempting to connect to core @ localhost:59500
+[19/04/10 10:57] [repm] registration; id=r101; address=localhost:59506; fingerprint=bin14rbmvban1e47ts7g
+[19/04/10 10:57] [repm] connected
+[19/04/10 10:57] [repm] added s100
+[19/04/10 10:57] [repm] service started with pid=28860
+[19/04/10 10:57] [repm] -> Request:"gmbh.shutdown" 
+[19/04/10 10:57] [repm] -> Request:"core.shutdown" 
+[19/04/10 10:57] [repm] disconnecting
+[19/04/10 10:57] [repm] sending notify to core
+[19/04/10 10:57] [repm] shutdown complete...
+[19/04/10 10:57] [repm]                     _                       
+[19/04/10 10:57] [repm]   _  ._ _  |_  |_| |_)  _  ._ _   _ _|_  _  
+[19/04/10 10:57] [repm]  (_| | | | |_) | | | \ (/_ | | | (_) |_ (/_ 
+[19/04/10 10:57] [repm]   _|                                          
+[19/04/10 10:57] [repm] started, time=Apr 10 10:57:50
+[19/04/10 10:57] [repm] env=M; ProcmAddress=localhost:59500; hostname=localhost
+[19/04/10 10:57] [repm] remote is in managed mode; using sigusr2; ignoring sigusr1, sigint
+[19/04/10 10:57] [repm] attempting to connect to core @ localhost:59500
+[19/04/10 10:57] [repm] registration; id=r101; address=localhost:59506; fingerprint=bin14vjmvban1os779eg
+[19/04/10 10:57] [repm] connected
+[19/04/10 10:57] [repm] added s100
+[19/04/10 10:57] [repm] service started with pid=28903
+[19/04/10 11:00] [repm] -> Request:"gmbh.shutdown" 
+[19/04/10 11:00] [repm] -> Request:"core.shutdown" 
+[19/04/10 11:00] [repm] disconnecting
+[19/04/10 11:00] [repm] sending notify to core
+[19/04/10 11:00] [repm] shutdown complete...

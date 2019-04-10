@@ -1,0 +1,22 @@
+{{ define "default_template" }}
+<!doctype html>
+
+</head>
+    <title>Thirty-8 Ninety-5</title>
+
+    <link rel="stylesheet" href="static/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="static/css/default.css">
+    
+</head>
+<body>
+
+    {{ template "nav" . }}
+
+    <div class="container">
+    {{ template "body_content" . }}
+    </div>
+
+    <script src="static/js/jquery.min.js"></script>
+    <script src="static/js/railway.js"></script>
+</body>
+{{ end }}
