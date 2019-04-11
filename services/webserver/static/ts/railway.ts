@@ -1,4 +1,4 @@
-// _login handles login request
+// _login handles login requests
 function _login(){
     console.log("login requested");
     let form = document.getElementById("login-form");
@@ -61,9 +61,95 @@ function _login(){
     }).fail((data:any)=>{
             console.log(data);
     });
-
-
 }
+
+// _register handles registe requests
+function _register(){
+    console.log("register requested");
+    let form = document.getElementById("register-form");
+    let loading = __getLoading(1)
+    let errorBox = document.getElementById('error-box');
+    let box = document.getElementById("register-box");
+    if(form != null){
+        form.style.display = 'none';
+        if(box != null){
+            box.appendChild(loading);
+        }
+    }
+    if(errorBox != null){
+        errorBox.style.display = 'none';
+    }
+
+    let error = (msg:string)=>{
+        if(errorBox != null){
+            errorBox.style.display = 'block';
+            errorBox.innerHTML = msg;
+        }
+        if(box != null){ box.removeChild(loading); }
+        if(form != null){ form.style.display = 'block'; }
+    };
+
+    let unameField: any = document.getElementById("user");
+    let emailField: any = document.getElementById("email");
+    let pwordField: any = document.getElementById("pass");
+    let pwordConfirmField: any = document.getElementById("passConfirm");
+
+    let uname: string = "";
+    if(unameField != null){
+        uname = unameField.value;
+        if(uname == ""){
+            error("username cannot be blank");
+            return;
+        }
+    }
+    let email: string = "";
+    if(emailField != null){
+        email = emailField.value;
+        if(email == ""){
+            error("email cannot be blank");
+            return;
+        }
+    } else {console.log("issues")}
+    let pass: string = "";
+    if(pwordField != null){
+        pass = pwordField.value;
+        if(pass == ""){
+            error("password cannot be blank");
+            return
+        }
+    }
+    let passConfirm: string = "";
+    if(pwordConfirmField != null){
+        passConfirm = pwordConfirmField.value;
+        if(passConfirm == ""){
+            error("password cannot be blank");
+            return
+        }
+    }
+
+    if(passConfirm != pass){
+        error("passwords must match");
+        return
+    }
+
+    console.log(uname, email, pass, passConfirm);
+
+    let data = new FormData();
+    data.append("user",uname);
+    data.append("email",email);
+    data.append("pass",pass);
+    // @ts-ignore
+    $.ajax({
+        type: 'POST',
+        url: '/register',
+        data: data,
+    }).done((data:any)=>{
+            console.log(data);
+    }).fail((data:any)=>{
+            console.log(data);
+    });
+}
+
 
 // __getLoading returns the loading image in a div with id = "loading-icon-<id>"
 function __getLoading(id: number): HTMLDivElement{

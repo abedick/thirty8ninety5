@@ -4,3 +4,4 @@ bin/*
 services/users/bin
 services/webserver/bin
 services/auth/node_modules
+services/users/src/src
