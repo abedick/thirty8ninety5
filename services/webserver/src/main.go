@@ -117,13 +117,13 @@ func handleRegisterPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	e := result.GetPayload().GetStringField("errror")
+	e := result.GetPayload().GetStringField("error")
 	if e != "" {
-		w.Write([]byte(fmt.Sprintf(`{error:'%s',}`, e)))
+		w.Write([]byte(fmt.Sprintf(`{error:'%s'}`, e)))
 		return
 	}
 	d := result.GetPayload().GetStringField("data")
-	w.Write([]byte(fmt.Sprintf(`{data:'%s',}`, d)))
+	w.Write([]byte(fmt.Sprintf(`{data:'%s'}`, d)))
 	fmt.Println(d)
 	return
 }

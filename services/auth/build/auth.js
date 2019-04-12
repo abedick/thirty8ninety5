@@ -37,6 +37,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var gmbh = require('gmbh');
 var passwordHash = require('password-hash');
 var MongoClient = require('mongodb').MongoClient;
+var jwt = require('jsonwebtoken');
 var client;
 var mongoUsers;
 var MongoURL = "mongodb://localhost:27017";
@@ -75,53 +76,45 @@ function grantAuth(sender, request) {
 }
 function register(sender, request) {
     return __awaiter(this, void 0, void 0, function () {
-        var user, email, pass, CheckDatabase;
+        var result, p;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
-                    console.log("incoming auth request");
-                    user = request.getTextfields('user');
-                    email = request.getTextfields('email');
-                    pass = passwordHash.generate(request.getTextfields('pass'));
-                    CheckDatabase = function () {
-                        return new Promise(function (resolve, reject) {
-                            mongoUsers.findOne({ username: user }, function (err, item) {
-                                if (err != null) {
-                                    console.log(err);
-                                    var p = client.NewPayload();
-                                    p.appendTextfields("error", "internal server error: 1");
-                                    resolve(p);
-                                    return;
-                                }
-                                if (item && item.username) {
-                                    var p = client.NewPayload();
-                                    p.appendTextfields("data", "user already exists");
-                                    resolve(p);
-                                    return;
-                                }
-                                else {
-                                    // add user to database
-                                    mongoUsers.insertOne(createUser(user, email, pass), function (err, item) {
-                                        if (err != null) {
-                                            console.log(err);
-                                            var p_1 = client.NewPayload();
-                                            p_1.appendTextfields("error", "internal server error: 2");
-                                            resolve(p_1);
-                                            return;
-                                        }
-                                        var p = client.NewPayload();
-                                        p.appendTextfields("data", "user-added");
-                                        resolve(p);
-                                    });
-                                }
-                            });
+                case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
+                        var user = request.getTextfields('user');
+                        var email = request.getTextfields('email');
+                        var pass = passwordHash.generate(request.getTextfields('pass'));
+                        mongoUsers.findOne({ username: user }, function (err, item) {
+                            if (err != null) {
+                                resolve(["error", "internal server error: 1"]);
+                            }
+                            else if (item && item.username) {
+                                resolve(["error", "user already exists"]);
+                            }
+                            else {
+                                // add user to database
+                                var usr_1 = createUser(user, email, pass);
+                                mongoUsers.insertOne(usr_1, function (err, item) {
+                                    if (err != null) {
+                                        resolve(["error", "internal server error: 2"]);
+                                    }
+                                    else {
+                                        resolve(["data", generateToken(usr_1)]);
+                                    }
+                                });
+                            }
                         });
-                    };
-                    return [4 /*yield*/, CheckDatabase()];
-                case 1: return [2 /*return*/, _a.sent()];
+                    })];
+                case 1:
+                    result = _a.sent();
+                    console.log("registration-request: result=" + result[0] + ", " + result[1]);
+                    p = client.NewPayload();
+                    p.appendTextfields(result[0], result[1]);
+                    return [2 /*return*/, p];
             }
         });
     });
+}
+function generateToken(user) {
 }
 function createUser(user, email, passHash) {
     var t = new Date();
