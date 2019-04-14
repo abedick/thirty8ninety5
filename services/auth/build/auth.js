@@ -43,6 +43,8 @@ var mongoUsers;
 var MongoURL = "mongodb://localhost:27017";
 var MongoDB = "gmbh";
 var MongoCollection = "user_accounts";
+// store a different secret in an env file...
+var tmpSecret = "a7FH7LxBwBCzt0XbWc3kVQJYS5ENZ97LOpM6MnN2gH2JsmIXwct0cLetIXGe7Od27s8BIaGmI7qiQNlUDKi3ptyMKz4gKpwbtqJrAPrZbcZ9i6e35TQFoBE8ngA/ehYphNARjKSogo3EU/eFi/6lizp+8s5fJU7O/t82MQSfTS2oRHdaEILS3fl32s1ryDm+tR+VGT3RqvNynYW0WQb5GN2RLYwZ+liAgrb5MbljACOMtulcWrPYJpWLR9fKGs/Azj5JGdhReVket/CBJ0SFhW9EtW6e2YkNv9rTQpZNqB9yA1pOLPKQJPefux2K86/efTRIfTPgc5q8ERtP1s4ZyA==";
 function main() {
     console.log("starting auth server");
     client = new gmbh.gmbh();
@@ -63,14 +65,37 @@ function main() {
 }
 function grantAuth(sender, request) {
     return __awaiter(this, void 0, void 0, function () {
-        var retval;
+        var user, pass, result, retval;
         return __generator(this, function (_a) {
-            console.log("incoming auth request");
-            console.log(request.getTextfields('user'));
-            console.log(request.getTextfields('pass'));
-            retval = client.NewPayload();
-            retval.appendTextfields("result", "hello from n2; returning same message; message=" + request.getTextfields('test'));
-            return [2 /*return*/, retval];
+            switch (_a.label) {
+                case 0:
+                    console.log("incoming auth request");
+                    user = request.getTextfields('user');
+                    pass = request.getTextfields('pass');
+                    return [4 /*yield*/, new Promise(function (resolve, reject) {
+                            mongoUsers.findOne({ username: user }, function (err, item) {
+                                if (err != null) {
+                                    resolve(["error", "internal server error: 1"]);
+                                }
+                                else if (item && item.username) {
+                                    if (passwordHash.verify(pass, item.password)) {
+                                        resolve(["data", generateToken(item)]);
+                                    }
+                                    else {
+                                        resolve(["error", "user or password is incorrect"]);
+                                    }
+                                }
+                                else {
+                                    resolve(["error", "user or password is incorrect"]);
+                                }
+                            });
+                        })];
+                case 1:
+                    result = _a.sent();
+                    retval = client.NewPayload();
+                    retval.appendTextfields(result[0], result[1]);
+                    return [2 /*return*/, retval];
+            }
         });
     });
 }
@@ -115,6 +140,14 @@ function register(sender, request) {
     });
 }
 function generateToken(user) {
+    var str = jwt.sign({
+        exp: Math.floor(Date.now() / 1000) + (60 * 60),
+        data: {
+            username: user.username,
+            perm: user.perm,
+        },
+    }, tmpSecret);
+    return str;
 }
 function createUser(user, email, passHash) {
     var t = new Date();

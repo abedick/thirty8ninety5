@@ -56,9 +56,23 @@ function _login() {
             xhr.setRequestHeader('Authorization', authStr);
         },
     }).done(function (data) {
-        console.log(data);
+        try {
+            var pdata = JSON.parse(data);
+            if (pdata.error) {
+                error(pdata.error);
+                return;
+            }
+            if (pdata.data == "success") {
+                window.location.href = "/";
+                return;
+            }
+            error("internal server error");
+        }
+        catch (_a) {
+            error("could not contact server");
+        }
     }).fail(function (data) {
-        console.log(data);
+        error("could not contact server");
     });
 }
 // _register handles registe requests
@@ -132,20 +146,30 @@ function _register() {
         error("passwords must match");
         return;
     }
-
     // @ts-ignore
     $.ajax({
         type: 'POST',
         url: '/register',
         data: {
-            "user": uname,
-            "email": email,
-            "pass": pass,
+            user: uname,
+            email: email,
+            pass: pass,
         },
     }).done(function (data) {
-        console.log(data);
+        try {
+            var pdata = JSON.parse(data);
+            if (pdata.error) {
+                error(pdata.error);
+            }
+            else {
+                window.location.href = "/";
+            }
+        }
+        catch (_a) {
+            error("could not contact server");
+        }
     }).fail(function (data) {
-        console.log(data);
+        error("could not contact server");
     });
 }
 // __getLoading returns the loading image in a div with id = "loading-icon-<id>"

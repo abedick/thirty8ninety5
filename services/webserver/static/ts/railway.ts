@@ -57,9 +57,22 @@ function _login(){
             xhr.setRequestHeader('Authorization',authStr); 
         },
     }).done((data:any)=>{
-            console.log(data);
+        try {
+            let pdata = JSON.parse(data);
+            if(pdata.error){
+                error(pdata.error);
+                return
+            }
+            if(pdata.data == "success"){
+                window.location.href = "/";
+                return
+            }
+            error("internal server error");
+        }catch{
+            error("could not contact server");    
+        }
     }).fail((data:any)=>{
-            console.log(data);
+        error("could not contact server");
     });
 }
 
@@ -109,7 +122,10 @@ function _register(){
             error("email cannot be blank");
             return;
         }
-    } else {console.log("issues")}
+    } else {
+        console.log("issues"); 
+    }
+
     let pass: string = "";
     if(pwordField != null){
         pass = pwordField.value;
@@ -132,21 +148,28 @@ function _register(){
         return
     }
 
-    console.log(uname, email, pass, passConfirm);
-
-    let data = new FormData();
-    data.append("user",uname);
-    data.append("email",email);
-    data.append("pass",pass);
     // @ts-ignore
     $.ajax({
         type: 'POST',
         url: '/register',
-        data: data,
+        data: {
+            user: uname,
+            email: email,
+            pass: pass,
+        },
     }).done((data:any)=>{
-            console.log(data);
+        try {
+            let pdata = JSON.parse(data);
+            if(pdata.error){
+                error(pdata.error);
+            } else {
+                window.location.href = "/";
+            }
+        } catch {
+            error("could not contact server");
+        }
     }).fail((data:any)=>{
-            console.log(data);
+        error("could not contact server");
     });
 }
 

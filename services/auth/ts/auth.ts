@@ -10,6 +10,9 @@ const MongoURL = "mongodb://localhost:27017";
 const MongoDB = "gmbh";
 const MongoCollection = "user_accounts";
 
+// store a different secret in an env file...
+const tmpSecret = "a7FH7LxBwBCzt0XbWc3kVQJYS5ENZ97LOpM6MnN2gH2JsmIXwct0cLetIXGe7Od27s8BIaGmI7qiQNlUDKi3ptyMKz4gKpwbtqJrAPrZbcZ9i6e35TQFoBE8ngA/ehYphNARjKSogo3EU/eFi/6lizp+8s5fJU7O/t82MQSfTS2oRHdaEILS3fl32s1ryDm+tR+VGT3RqvNynYW0WQb5GN2RLYwZ+liAgrb5MbljACOMtulcWrPYJpWLR9fKGs/Azj5JGdhReVket/CBJ0SFhW9EtW6e2YkNv9rTQpZNqB9yA1pOLPKQJPefux2K86/efTRIfTPgc5q8ERtP1s4ZyA==";
+
 function main(){
     console.log("starting auth server");
     
@@ -35,10 +38,25 @@ function main(){
 
 async function grantAuth(sender: string, request: any){
     console.log("incoming auth request");
-    console.log(request.getTextfields('user'));
-    console.log(request.getTextfields('pass'));
+    let user = request.getTextfields('user');
+    let pass = request.getTextfields('pass');
+    let result = await new Promise<any>((resolve:any, reject:any)=>{
+        mongoUsers.findOne({username:user}, (err:any, item:any)=>{
+            if(err != null){
+                resolve(["error","internal server error: 1"]);
+            } else if(item && item.username){
+                if(passwordHash.verify(pass, item.password)){
+                    resolve(["data",generateToken(item)]);
+                } else {
+                    resolve(["error","user or password is incorrect"]);
+                }
+            } else {
+                resolve(["error","user or password is incorrect"]);
+            }
+        });
+    });
     let retval = client.NewPayload();
-    retval.appendTextfields("result", `hello from n2; returning same message; message=${request.getTextfields('test')}`)
+    retval.appendTextfields(result[0], result[1]);
     return retval;
 }
 
@@ -71,8 +89,16 @@ async function register(sender: string, request: any) {
     return p;
 }
 
-function generateToken(user:any): any {
 
+function generateToken(user:any): string {
+    let str = jwt.sign({
+        exp: Math.floor(Date.now() / 1000) + (60 * 60),
+        data: {
+            username: user.username,
+            perm: user.perm,
+        },
+    }, tmpSecret);
+    return str;
 }
 
 function createUser(user:string, email:string, passHash:string): object {
