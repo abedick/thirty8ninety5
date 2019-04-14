@@ -62,7 +62,16 @@ procm_bin = ""  # default is $GOPATH/bin/gmbhProcm
     ports = ["8080"]
     interpreter = ""
 
-    
+    [[service]]
+    id = "auth"
+    language = "node"
+    bin_path = ""
+    src_path = "./services/auth"
+    args = [""]
+    env = [""]
+    entry_point = "./services/auth/main.js"
+    ports = [""]
+    interpreter = "node"
 
     # [[service]]
     # id = ""

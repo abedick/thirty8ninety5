@@ -43,8 +43,7 @@ var mongoUsers;
 var MongoURL = "mongodb://localhost:27017";
 var MongoDB = "gmbh";
 var MongoCollection = "user_accounts";
-// store a different secret in an env file...
-var tmpSecret = "a7FH7LxBwBCzt0XbWc3kVQJYS5ENZ97LOpM6MnN2gH2JsmIXwct0cLetIXGe7Od27s8BIaGmI7qiQNlUDKi3ptyMKz4gKpwbtqJrAPrZbcZ9i6e35TQFoBE8ngA/ehYphNARjKSogo3EU/eFi/6lizp+8s5fJU7O/t82MQSfTS2oRHdaEILS3fl32s1ryDm+tR+VGT3RqvNynYW0WQb5GN2RLYwZ+liAgrb5MbljACOMtulcWrPYJpWLR9fKGs/Azj5JGdhReVket/CBJ0SFhW9EtW6e2YkNv9rTQpZNqB9yA1pOLPKQJPefux2K86/efTRIfTPgc5q8ERtP1s4ZyA==";
+var tmpSecret = process.env.RAILWAYAUTH;
 function main() {
     console.log("starting auth server");
     client = new gmbh.gmbh();
