@@ -46,8 +46,13 @@ var MongoCollection = "user_accounts";
 var tmpSecret = process.env.RAILWAYAUTH;
 function main() {
     console.log("starting auth server");
+    if (tmpSecret == "") {
+        console.log("could not parse RAILWAYAUTH env var");
+        process.exit(1);
+    }
     client = new gmbh.gmbh();
     client.opts.service.name = "auth";
+    client.opts.runtime.verbose = false;
     client.Route("grant", grantAuth);
     client.Route("register", register);
     client.Start().then(function () {
@@ -69,8 +74,8 @@ function grantAuth(sender, request) {
             switch (_a.label) {
                 case 0:
                     console.log("incoming auth request");
-                    user = request.getTextfields('user');
-                    pass = request.getTextfields('pass');
+                    user = request.get('user');
+                    pass = request.get('pass');
                     return [4 /*yield*/, new Promise(function (resolve, reject) {
                             mongoUsers.findOne({ username: user }, function (err, item) {
                                 if (err != null) {
@@ -92,7 +97,7 @@ function grantAuth(sender, request) {
                 case 1:
                     result = _a.sent();
                     retval = client.NewPayload();
-                    retval.appendTextfields(result[0], result[1]);
+                    retval.append(result[0], result[1]);
                     return [2 /*return*/, retval];
             }
         });
@@ -104,9 +109,9 @@ function register(sender, request) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
-                        var user = request.getTextfields('user');
-                        var email = request.getTextfields('email');
-                        var pass = passwordHash.generate(request.getTextfields('pass'));
+                        var user = request.get('user');
+                        var email = request.get('email');
+                        var pass = passwordHash.generate(request.get('pass'));
                         mongoUsers.findOne({ username: user }, function (err, item) {
                             if (err != null) {
                                 resolve(["error", "internal server error: 1"]);
@@ -130,9 +135,8 @@ function register(sender, request) {
                     })];
                 case 1:
                     result = _a.sent();
-                    console.log("registration-request: result=" + result[0] + ", " + result[1]);
                     p = client.NewPayload();
-                    p.appendTextfields(result[0], result[1]);
+                    p.append(result[0], result[1]);
                     return [2 /*return*/, p];
             }
         });

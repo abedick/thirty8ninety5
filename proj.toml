@@ -52,9 +52,9 @@ procm_bin = ""  # default is $GOPATH/bin/gmbhProcm
 ##################################################################################
 
     [[service]]
-    id = "content-server"
+    id = "webserver"
     language = "go"
-    bin_path = "./services/webserver/webserver"
+    bin_path = "./services/webserver/bin/webserver"
     src_path = "./services/webserver"
     args = [""]
     env = [""]
@@ -70,6 +70,17 @@ procm_bin = ""  # default is $GOPATH/bin/gmbhProcm
     args = [""]
     env = [""]
     entry_point = "./services/auth/main.js"
+    ports = [""]
+    interpreter = "node"
+
+    [[service]]
+    id = "content"
+    language = "node"
+    bin_path = ""
+    src_path = "./services/content"
+    args = [""]
+    env = [""]
+    entry_point = "./services/content/main.js"
     ports = [""]
     interpreter = "node"
 

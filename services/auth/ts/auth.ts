@@ -15,8 +15,14 @@ var tmpSecret = process.env.RAILWAYAUTH;
 function main(){
     console.log("starting auth server");
     
+    if(tmpSecret == ""){
+        console.log("could not parse RAILWAYAUTH env var");
+        process.exit(1);
+    }
+
     client = new gmbh.gmbh();
     client.opts.service.name = "auth";
+    client.opts.runtime.verbose = false;
     
     client.Route("grant", grantAuth);
     client.Route("register", register);
@@ -37,8 +43,8 @@ function main(){
 
 async function grantAuth(sender: string, request: any){
     console.log("incoming auth request");
-    let user = request.getTextfields('user');
-    let pass = request.getTextfields('pass');
+    let user = request.get('user');
+    let pass = request.get('pass');
     let result = await new Promise<any>((resolve:any, reject:any)=>{
         mongoUsers.findOne({username:user}, (err:any, item:any)=>{
             if(err != null){
@@ -55,15 +61,15 @@ async function grantAuth(sender: string, request: any){
         });
     });
     let retval = client.NewPayload();
-    retval.appendTextfields(result[0], result[1]);
+    retval.append(result[0], result[1]);
     return retval;
 }
 
 async function register(sender: string, request: any) {
     let result = await new Promise<any>((resolve:any,reject:any)=>{
-        let user = request.getTextfields('user');
-        let email = request.getTextfields('email');
-        let pass = passwordHash.generate(request.getTextfields('pass'));
+        let user = request.get('user');
+        let email = request.get('email');
+        let pass = passwordHash.generate(request.get('pass'));
         mongoUsers.findOne({username:user}, (err:any, item:any)=>{
             if(err != null){
                 resolve(["error","internal server error: 1"]);
@@ -82,9 +88,8 @@ async function register(sender: string, request: any) {
             }
         });
     });
-    console.log("registration-request: result="+result[0]+", "+result[1]);
     let p = client.NewPayload();
-    p.appendTextfields(result[0],result[1]);
+    p.append(result[0],result[1]);
     return p;
 }
 

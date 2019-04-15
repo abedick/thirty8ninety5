@@ -8,6 +8,10 @@ import (
 	"github.com/gmbh-micro/gmbh"
 )
 
+func accountRoutes() {
+
+}
+
 func handleLogin(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("incoming login request")
 
@@ -17,7 +21,7 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templates, err := getDefaultGuestTemplate(contentType, path.Join("tmpl", "content", "login.gohtml"))
+	templates, err := getDefaultGuestTemplate(contentType, path.Join("tmpl", "accounts", "login.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
 		fmt.Println(err.Error())
@@ -34,19 +38,19 @@ func handleLoginPost(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("not okay")
 	}
 	payload := gmbh.NewPayload()
-	payload.AppendStringField("user", u)
-	payload.AppendStringField("pass", p)
+	payload.Append("user", u)
+	payload.Append("pass", p)
 	result, err := client.MakeRequest("auth", "grant", payload)
 	if err != nil {
-		w.Write([]byte(fmt.Sprintf(`{ "error":"%s"}`, err.Error())))
+		w.Write([]byte(fmt.Sprintf(`{ "error":"%s"}`, "internal server error")))
 		return
 	}
-	e := result.GetPayload().GetStringField("error")
+	e := result.GetPayload().GetAsString("error")
 	if e != "" {
 		w.Write([]byte(fmt.Sprintf(`{ "error":"%s"}`, e)))
 		return
 	}
-	d := result.GetPayload().GetStringField("data")
+	d := result.GetPayload().GetAsString("data")
 	if d == "" {
 		w.Write([]byte(fmt.Sprintf(`{"data":"error"}`)))
 		return
@@ -68,7 +72,7 @@ func handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templates, err := getDefaultGuestTemplate(contentType, path.Join("tmpl", "content", "register.gohtml"))
+	templates, err := getDefaultGuestTemplate(contentType, path.Join("tmpl", "accounts", "register.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
 		fmt.Println(err.Error())
@@ -88,9 +92,9 @@ func handleRegisterPost(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("register post")
 
 	payload := gmbh.NewPayload()
-	payload.AppendStringField("user", r.FormValue("user"))
-	payload.AppendStringField("email", r.FormValue("email"))
-	payload.AppendStringField("pass", r.FormValue("pass"))
+	payload.Append("user", r.FormValue("user"))
+	payload.Append("email", r.FormValue("email"))
+	payload.Append("pass", r.FormValue("pass"))
 	result, err := client.MakeRequest("auth", "register", payload)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -98,12 +102,12 @@ func handleRegisterPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	e := result.GetPayload().GetStringField("error")
+	e := result.GetPayload().GetAsString("error")
 	if e != "" {
 		w.Write([]byte(fmt.Sprintf(`{ "error":"%s"}`, e)))
 		return
 	}
-	d := result.GetPayload().GetStringField("data")
+	d := result.GetPayload().GetAsString("data")
 	w.Write([]byte(fmt.Sprintf(`{"data":"%s"}`, d)))
 
 	err = attachCookie(&w, r, d)

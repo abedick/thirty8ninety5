@@ -19,7 +19,7 @@ func main() {
 	fmt.Println("starting webserver")
 
 	runtime := gmbh.SetRuntime(gmbh.RuntimeOptions{Blocking: false, Verbose: true})
-	service := gmbh.SetService(gmbh.ServiceOptions{Name: "content-server"})
+	service := gmbh.SetService(gmbh.ServiceOptions{Name: "webserver"})
 
 	var err error
 	client, err = gmbh.NewClient(runtime, service)
@@ -32,6 +32,8 @@ func main() {
 	r := mux.NewRouter()
 
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+
+	contentRoutes(r)
 
 	r.HandleFunc("/login", handleLogin).Methods("GET")
 	r.HandleFunc("/login", handleLoginPost).Methods("POST")
@@ -46,9 +48,8 @@ func main() {
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("incoming request")
-
 	data, contentType := checkLoggedIn(w, r)
-	templates, err := getDefaultGuestTemplate(contentType, path.Join("tmpl", "content", "index.gohtml"))
+	templates, err := getDefaultGuestTemplate(contentType, path.Join("tmpl", "index.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
 		fmt.Println(err.Error())

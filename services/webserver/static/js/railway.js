@@ -1,4 +1,8 @@
 "use strict";
+//_submitContent handles new content requests
+function _submitContent() {
+    console.log("new content submission");
+}
 // _login handles login requests
 function _login() {
     console.log("login requested");
