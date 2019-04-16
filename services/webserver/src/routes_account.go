@@ -15,11 +15,13 @@ func accountRoutes() {
 func handleLogin(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("incoming login request")
 
-	data, contentType := checkLoggedIn(w, r)
+	usr, contentType := checkLoggedIn(w, r)
 	if contentType != guest {
 		http.Redirect(w, r, "/", 301)
 		return
 	}
+	tmpl := make(map[string]interface{})
+	tmpl["user"] = usr
 
 	templates, err := getDefaultGuestTemplate(contentType, path.Join("tmpl", "accounts", "login.gohtml"))
 	if err != nil {
@@ -27,13 +29,12 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err.Error())
 		return
 	}
-	templates.ExecuteTemplate(w, "default_template", data)
+	templates.ExecuteTemplate(w, "default_template", tmpl)
 }
 
 func handleLoginPost(w http.ResponseWriter, r *http.Request) {
 	u, p, ok := r.BasicAuth()
 	if ok {
-		fmt.Println(u, p)
 	} else {
 		fmt.Println("not okay")
 	}

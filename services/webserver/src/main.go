@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -48,14 +49,29 @@ func main() {
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("incoming request")
-	data, contentType := checkLoggedIn(w, r)
+	usr, contentType := checkLoggedIn(w, r)
+	tmpl := make(map[string]interface{})
+	tmpl["user"] = usr
+
+	payload := gmbh.NewPayload()
+	payload.Append("range", "10")
+	result, err := client.MakeRequest("content", "readMany", payload)
+	if err == nil {
+		tmpl["error"] = result.GetPayload().GetAsString("error")
+		articles := result.GetPayload().Get("articles")
+		b, _ := json.Marshal(articles)
+		tmpl["script"] = "_indexWithArticles(" + string(b) + ");"
+	} else {
+		tmpl["error"] = "internal server error"
+	}
+
 	templates, err := getDefaultGuestTemplate(contentType, path.Join("tmpl", "index.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
 		fmt.Println(err.Error())
 		return
 	}
-	templates.ExecuteTemplate(w, "default_template", data)
+	templates.ExecuteTemplate(w, "default_template", tmpl)
 }
 
 func getDefaultGuestTemplate(display content, filenames ...string) (*template.Template, error) {

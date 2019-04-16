@@ -36,11 +36,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var gmbh = require('gmbh');
 var MongoClient = require('mongodb').MongoClient;
+var shortid = require('shortid');
 var client;
 var mongoArticles;
 var MongoURL = "mongodb://localhost:27017";
 var MongoDB = "gmbh";
-var MongoCollection = "user_accounts";
+var MongoCollection = "articles";
 function main() {
     console.log("starting content server");
     client = new gmbh.gmbh();
@@ -70,13 +71,21 @@ function createArticle(sender, request) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
-                        var article = request.getJson('article');
+                        var article = formalizeArticle(request.get('date'), request.get('date'), request.get('author'), request.get('title'), request.get('tags'), request.get('body'), [""]);
                         console.log(article);
-                        resolve("result");
+                        mongoArticles.insertOne(article, function (err, item) {
+                            if (err != null) {
+                                resolve(["error", "internal server error: 1"]);
+                            }
+                            else {
+                                resolve(["data", article.id]);
+                            }
+                        });
                     })];
                 case 1:
                     action = _a.sent();
                     p = new gmbh.payload();
+                    p.append(action[0], action[1]);
                     return [2 /*return*/, p];
             }
         });
@@ -84,19 +93,57 @@ function createArticle(sender, request) {
 }
 function readArticle(sender, request) {
     return __awaiter(this, void 0, void 0, function () {
-        var p;
+        var action, p;
         return __generator(this, function (_a) {
-            p = new gmbh.payload();
-            return [2 /*return*/, p];
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
+                        var id = request.get('id');
+                        mongoArticles.findOne({ id: id }, function (err, item) {
+                            if (err != null) {
+                                resolve(["error", "internal server error: 1"]);
+                            }
+                            else if (item && item.id) {
+                                resolve(["data", item]);
+                            }
+                            else {
+                                resolve(["error", "could not find article with specified id"]);
+                            }
+                        });
+                    })];
+                case 1:
+                    action = _a.sent();
+                    p = new gmbh.payload();
+                    p.append(action[0], action[1]);
+                    return [2 /*return*/, p];
+            }
         });
     });
 }
 function readArticles(sender, request) {
     return __awaiter(this, void 0, void 0, function () {
-        var p;
+        var action, p;
         return __generator(this, function (_a) {
-            p = new gmbh.payload();
-            return [2 /*return*/, p];
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
+                        mongoArticles.find({}, {
+                            projection: {
+                                _id: 0,
+                                revisions: 0,
+                            }
+                        }).toArray(function (err, result) {
+                            if (err != null) {
+                                resolve(["error", "internal server error: 1"]);
+                                return;
+                            }
+                            resolve(["articles", result]);
+                        });
+                    })];
+                case 1:
+                    action = _a.sent();
+                    p = new gmbh.payload();
+                    p.append(action[0], action[1]);
+                    return [2 /*return*/, p];
+            }
         });
     });
 }
@@ -129,6 +176,7 @@ function deleteArticles(sender, request) {
 }
 function formalizeArticle(date, lastUpdate, authors, title, tags, body, revisions) {
     return {
+        id: shortid.generate(),
         date: date,
         lastUpdate: lastUpdate,
         authors: authors,

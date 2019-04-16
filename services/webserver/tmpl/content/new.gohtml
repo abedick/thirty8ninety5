@@ -4,46 +4,48 @@
   <div class="col-10">
     <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;New Article</h3>
     <div class="card">
-      <div class="card-body" id="login-box">
+      <div class="card-body" id="article-box">
+        <form id="article-form">
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="article-title-title">Title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            </div>
+            <input type="text" class="form-control" placeholder="" aria-label="articleTitle" aria-describedby="article-title-title" id="article-title">
+          </div>
 
-        <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text" id="article-title-title">Title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="article-date-title">Date&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            </div>
+            <input type="text" class="form-control" placeholder="{{ .date }}" aria-label="Username" aria-describedby="article-date-title" id="article-date" disabled>
           </div>
-          <input type="text" class="form-control" placeholder="" aria-label="articleTitle" aria-describedby="article-title-title" id="article-title">
-        </div>
 
-        <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text" id="article-date-title">Date&nbsp;&nbsp;&nbsp;&nbsp;</span>
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="article-author-title">Author</span>
+            </div>
+            <input type="text" class="form-control" placeholder=" {{ .user.username }}" aria-label="Username" aria-describedby="article-author-title" id="article-author" disabled>
           </div>
-          <input type="text" class="form-control" placeholder="{{ .date }}" aria-label="Username" aria-describedby="article-date-title" id="article-date" disabled>
-        </div>
 
-        <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text" id="article-author-title">Author</span>
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="article-tags-title">Tags&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            </div>
+            <input type="text" class="form-control" placeholder="seperate with commas" aria-label="Username" aria-describedby="article-tags-title" id="article-tags">
           </div>
-          <input type="text" class="form-control" placeholder=" {{ .username }}" aria-label="Username" aria-describedby="article-author-title" id="article-author" disabled>
-        </div>
 
-        <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text" id="article-tags-title">Tags&nbsp;&nbsp;&nbsp;&nbsp;</span>
-          </div>
-          <input type="text" class="form-control" placeholder="seperate with commas" aria-label="Username" aria-describedby="article-tags-title" id="article-tags">
-        </div>
-
-        <div class="input-group">
-          <div class="input-group-prepend">
-            <span class="input-group-text">Body&nbsp;&nbsp;&nbsp;</span>
-          </div>
-          <textarea rows="10" class="form-control" aria-label="With textarea" id="article-body"></textarea>
-          </div>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Body&nbsp;&nbsp;&nbsp;</span>
+            </div>
+            <textarea rows="10" class="form-control" aria-label="With textarea" id="article-body"></textarea>
+            </div>
+          </form>
         </div>
       </div>
 
       <br>
+      <div id="error-box" style="display:'none';" class="error-msg"></div>
       <button onclick="_submitContent()" class="btn-info btn-block btn-lg btn-primary">Submit</button>
 
     </div>

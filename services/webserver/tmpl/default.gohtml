@@ -21,5 +21,8 @@
 
     <script src="/static/js/jquery.min.js"></script>
     <script src="/static/js/railway.js"></script>
+    {{ if .script }}
+        <script>{{ .script }}</script>
+    {{ end }}
 </body>
 {{ end }}
