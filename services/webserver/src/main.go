@@ -1,12 +1,13 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"path"
+	"sort"
 	"text/template"
+	"time"
 
 	"github.com/gmbh-micro/gmbh"
 	"github.com/gorilla/mux"
@@ -58,9 +59,27 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 	result, err := client.MakeRequest("content", "readMany", payload)
 	if err == nil {
 		tmpl["error"] = result.GetPayload().GetAsString("error")
-		articles := result.GetPayload().Get("articles")
-		b, _ := json.Marshal(articles)
-		tmpl["script"] = "_indexWithArticles(" + string(b) + ");"
+		rawArticles := result.GetPayload().Get("articles")
+		arrayArticles, ok := rawArticles.([]interface{})
+		if ok {
+			sort.SliceStable(arrayArticles, func(i, j int) bool {
+				ti, err := time.Parse(time.RFC850, arrayArticles[i].(map[string]interface{})["date"].(string))
+				if err != nil {
+					return false
+				}
+				tj, err := time.Parse(time.RFC850, arrayArticles[j].(map[string]interface{})["date"].(string))
+				if err != nil {
+					return false
+				}
+				if ti.After(tj) {
+					return true
+				}
+				return false
+			})
+			tmpl["articles"] = arrayArticles
+		} else {
+			fmt.Println("issues with articles")
+		}
 	} else {
 		tmpl["error"] = "internal server error"
 	}

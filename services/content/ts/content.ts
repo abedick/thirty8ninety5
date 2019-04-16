@@ -78,6 +78,7 @@ async function readArticle(sender: string, request: any){
         });
     });
     let p = new gmbh.payload();
+    console.log(action);
     p.append(action[0], action[1]);
     return p;
 }

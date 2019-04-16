@@ -1,30 +1,4 @@
 "use strict";
-// _indexWithArticles generates the index page articles
-function _indexWithArticles(articles) {
-    // console.log(articles);
-    var container = document.getElementById("body-content");
-    if (container == null) {
-        console.log("DOM error");
-        return;
-    }
-    for (var i in articles) {
-        console.log(articles[i]);
-        var row = __builder("div", "row-" + articles[i].id, "row justify-content-center");
-        var col = __builder("div", "col-" + articles[i].id, "col-8");
-        var card = __builder("div", "card-" + articles[i].id, "card");
-        var title = __builder("h3", "card-title-" + articles[i].id, "card-title");
-        title.innerHTML = "&nbsp;&nbsp;" + articles[i].title;
-        var body = __builder("div", "card-body-" + articles[i].id, "card-body");
-        body.innerHTML = articles[i].body;
-        card.appendChild(body);
-        col.appendChild(title);
-        col.appendChild(card);
-        row.appendChild(col);
-        container.appendChild(row);
-        container.appendChild(__builder("br", "", ""));
-        container.appendChild(__builder("br", "", ""));
-    }
-}
 //_submitContent handles new content requests
 function _submitContent() {
     console.log("new content submission");
@@ -298,4 +272,43 @@ function __builder(ele, id, classList) {
         elem.classList = classList;
     }
     return elem;
+}
+function __articleBuilder(article) {
+    var card = __cardBuilder(article.id);
+    card.title.innerHTML = "&nbsp;&nbsp;" + article.title;
+    var lhs = __builder("div", "", "col-6");
+    lhs.innerHTML = "<small>" + article.date + "</small>";
+    var rhs = __builder("div", "", "col-6 text-right");
+    rhs.innerHTML = "<small>By: " + article.authors + "</small>";
+    var body = __builder("div", "", "");
+    body.innerHTML = article.body;
+    var row = __builder("div", "", "row");
+    row.appendChild(lhs);
+    row.appendChild(rhs);
+    var footer = __builder("div", "", "text-right");
+    footer.innerHTML = "<small><a href=\"/content/articles/" + article.id + "\">permalink<a>";
+    card.body.appendChild(row);
+    card.body.appendChild(__builder("hr"));
+    card.body.appendChild(body);
+    card.body.appendChild(__builder("hr"));
+    card.body.appendChild(footer);
+    return card.card;
+}
+function __cardBuilder(id, titleStr, bodyStr) {
+    var row = __builder("div", "row-" + id, "row justify-content-center");
+    var col = __builder("div", "col-" + id, "col-8");
+    var card = __builder("div", "card-" + id, "card");
+    var title = __builder("h3", "card-title-" + id, "card-title");
+    if (titleStr) {
+        title.innerHTML = "&nbsp;&nbsp;" + titleStr;
+    }
+    var body = __builder("div", "card-body-" + id, "card-body");
+    if (bodyStr) {
+        body.innerHTML = bodyStr;
+    }
+    card.appendChild(body);
+    col.appendChild(title);
+    col.appendChild(card);
+    row.appendChild(col);
+    return { card: row, body: body, title: title };
 }

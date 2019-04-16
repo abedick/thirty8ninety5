@@ -1,4 +1,5 @@
 {{ define "body_content" }}
-    <div id="body-content">
-    </div>
+  {{ range $key, $value := .articles }}
+    {{template "article" $value }}
+  {{ end }}
 {{ end }}

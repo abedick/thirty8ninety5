@@ -113,6 +113,7 @@ function readArticle(sender, request) {
                 case 1:
                     action = _a.sent();
                     p = new gmbh.payload();
+                    console.log(action);
                     p.append(action[0], action[1]);
                     return [2 /*return*/, p];
             }
