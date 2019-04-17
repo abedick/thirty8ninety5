@@ -12,29 +12,19 @@ import (
 )
 
 func accountRoutes(r *mux.Router) {
-	r.HandleFunc("/accounts/manage", handleAccountsManage)
-	r.HandleFunc("/accounts/manage/update/{id}", handleAccountsUpdate).Methods("GET")
-	r.HandleFunc("/accounts/manage/update/{id}", handleAccountsUpdatePost).Methods("POST")
-	r.HandleFunc("/accounts/manage/delete/{id}", handleAccountsDelete).Methods("POST")
-
-	r.HandleFunc("/accounts/login", handleLogin).Methods("GET")
-	r.HandleFunc("/accounts/login/auth", handleLoginPost).Methods("POST")
-	r.HandleFunc("/accounts/register", handleRegister).Methods("GET")
-	r.HandleFunc("/accounts/register/new", handleRegisterPost).Methods("POST")
-	r.HandleFunc("/accounts/logout", handleLogout).Methods("GET")
-
+	r.HandleFunc("/accounts/manage", admin(authenticated(handleAccountsManage))).Methods("GET")
+	r.HandleFunc("/accounts/manage/update/{id}", admin(authenticated(handleAccountsUpdate))).Methods("GET")
+	r.HandleFunc("/accounts/manage/update/{id}", admin(authenticated(handleAccountsUpdatePost))).Methods("POST")
+	r.HandleFunc("/accounts/manage/delete/{id}", admin(authenticated(handleAccountsDelete))).Methods("POST")
+	r.HandleFunc("/accounts/login", guest(authenticated(handleLogin))).Methods("GET")
+	r.HandleFunc("/accounts/login/auth", guest(authenticated(handleLoginPost))).Methods("POST")
+	r.HandleFunc("/accounts/register", guest(authenticated(handleRegister))).Methods("GET")
+	r.HandleFunc("/accounts/register/new", guest(authenticated(handleRegisterPost))).Methods("POST")
+	r.HandleFunc("/accounts/logout", authenticated(handleLogout)).Methods("GET")
 }
 
-func handleAccountsManage(w http.ResponseWriter, r *http.Request) {
-	usr, contentType := checkLoggedIn(w, r)
-	if contentType != admin {
-		http.Redirect(w, r, "/", 301)
-		return
-	}
-	tmpl := make(map[string]interface{})
-	tmpl["user"] = usr
+func handleAccountsManage(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
 	tmpl["users"] = true
-
 	payload := gmbh.NewPayload()
 	payload.Append("range", 10)
 	result, err := client.MakeRequest("auth", "readMany", payload)
@@ -45,29 +35,21 @@ func handleAccountsManage(w http.ResponseWriter, r *http.Request) {
 		tmpl["users"] = result.GetPayload().Get("users")
 	}
 
-	templates, err := getAdminTemplate(contentType, path.Join("tmpl", "accounts", "manage.gohtml"))
+	templates, err := getAdminTemplate(creds["perm"].(string), path.Join("tmpl", "accounts", "manage.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
-		fmt.Println(err.Error())
 		return
 	}
 	templates.ExecuteTemplate(w, "admin_template", tmpl)
 
 }
 
-func handleAccountsDelete(w http.ResponseWriter, r *http.Request) {
-	_, contentType := checkLoggedIn(w, r)
-	if contentType != admin {
-		http.Redirect(w, r, "/", 301)
-		return
-	}
-
+func handleAccountsDelete(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
 	vars := mux.Vars(r)
 	payload := gmbh.NewPayload()
 	payload.Append("id", vars["id"])
 	result, err := client.MakeRequest("auth", "delete", payload)
 	if err != nil {
-		fmt.Println(err.Error())
 		w.Write([]byte(`{"error":"internal server error"}`))
 		return
 	}
@@ -80,12 +62,7 @@ func handleAccountsDelete(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleAccountsUpdatePost(w http.ResponseWriter, r *http.Request) {
-	_, contentType := checkLoggedIn(w, r)
-	if contentType != admin {
-		http.Redirect(w, r, "/", 301)
-		return
-	}
+func handleAccountsUpdatePost(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
 	vars := mux.Vars(r)
 	payload := gmbh.NewPayload()
 	payload.Append("id", vars["id"])
@@ -93,7 +70,6 @@ func handleAccountsUpdatePost(w http.ResponseWriter, r *http.Request) {
 	payload.Append("perm", r.FormValue("perm"))
 	result, err := client.MakeRequest("auth", "update", payload)
 	if err != nil {
-		fmt.Println(err.Error())
 		w.Write([]byte(`{"error":"internal server error"}`))
 		return
 	}
@@ -106,15 +82,8 @@ func handleAccountsUpdatePost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleAccountsUpdate(w http.ResponseWriter, r *http.Request) {
-	usr, contentType := checkLoggedIn(w, r)
-	if contentType != admin {
-		http.Redirect(w, r, "/", 301)
-		return
-	}
-
+func handleAccountsUpdate(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
 	vars := mux.Vars(r)
-	fmt.Println(vars["id"])
 	id := vars["id"]
 
 	payload := gmbh.NewPayload()
@@ -124,46 +93,32 @@ func handleAccountsUpdate(w http.ResponseWriter, r *http.Request) {
 	e := result.GetPayload().GetAsString("error")
 	account := result.GetPayload().Get("account")
 
-	tmpl := make(map[string]interface{})
-	tmpl["user"] = usr
 	tmpl["err"] = e
 	tmpl["account"] = account
 	tmpl["users"] = true
 
-	templates, err := getAdminTemplate(contentType, path.Join("tmpl", "accounts", "update.gohtml"))
+	templates, err := getAdminTemplate(creds["perm"].(string), path.Join("tmpl", "accounts", "update.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
-		fmt.Println(err.Error())
 		return
 	}
 	templates.ExecuteTemplate(w, "admin_template", tmpl)
 }
 
-func handleLogin(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("incoming login request")
-
-	usr, contentType := checkLoggedIn(w, r)
-	if contentType != guest {
-		http.Redirect(w, r, "/", 301)
-		return
-	}
-	tmpl := make(map[string]interface{})
-	tmpl["user"] = usr
-
-	templates, err := getDefaultGuestTemplate(contentType, path.Join("tmpl", "accounts", "login.gohtml"))
+func handleLogin(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
+	templates, err := getDefaultGuestTemplate(creds["perm"].(string), path.Join("tmpl", "accounts", "login.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
-		fmt.Println(err.Error())
 		return
 	}
 	templates.ExecuteTemplate(w, "default_template", tmpl)
 }
 
-func handleLoginPost(w http.ResponseWriter, r *http.Request) {
+func handleLoginPost(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
 	u, p, ok := r.BasicAuth()
-	if ok {
-	} else {
-		fmt.Println("not okay")
+	if !ok {
+		w.Write([]byte(fmt.Sprintf(`{ "error":"%s"}`, "could not parse auth")))
+		return
 	}
 	payload := gmbh.NewPayload()
 	payload.Append("user", u)
@@ -185,40 +140,26 @@ func handleLoginPost(w http.ResponseWriter, r *http.Request) {
 	}
 	err = attachCookie(&w, r, d)
 	if err != nil {
-		fmt.Println(err.Error())
 	}
 	w.Write([]byte(fmt.Sprintf(`{"data":"success"}`)))
 	return
 }
 
-func handleRegister(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("incoming register")
-
-	_, contentType := checkLoggedIn(w, r)
-	if contentType != guest {
-		http.Redirect(w, r, "/", 301)
-		return
-	}
-
-	templates, err := getDefaultGuestTemplate(contentType, path.Join("tmpl", "accounts", "register.gohtml"))
+func handleRegister(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
+	templates, err := getDefaultGuestTemplate(creds["perm"].(string), path.Join("tmpl", "accounts", "register.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
-		fmt.Println(err.Error())
 		return
 	}
 	templates.ExecuteTemplate(w, "default_template", nil)
 }
 
-func handleLogout(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("incoming logout")
-	DestroyToken(w, r)
+func handleLogout(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
+	destroyToken(w, r)
 	http.Redirect(w, r, "/", 301)
 }
 
-func handleRegisterPost(w http.ResponseWriter, r *http.Request) {
-
-	fmt.Println("register post")
-
+func handleRegisterPost(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
 	payload := gmbh.NewPayload()
 	payload.Append("user", r.FormValue("user"))
 	payload.Append("email", r.FormValue("email"))
@@ -226,7 +167,6 @@ func handleRegisterPost(w http.ResponseWriter, r *http.Request) {
 	payload.Append("time", time.Now().Format(time.RFC850))
 	result, err := client.MakeRequest("auth", "register", payload)
 	if err != nil {
-		fmt.Println(err.Error())
 		w.Write([]byte(`{"error":"internal server error"}`))
 		return
 	}
@@ -241,7 +181,6 @@ func handleRegisterPost(w http.ResponseWriter, r *http.Request) {
 
 	err = attachCookie(&w, r, d)
 	if err != nil {
-		fmt.Println(err.Error())
 	}
 	return
 }

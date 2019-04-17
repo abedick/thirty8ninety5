@@ -11,23 +11,20 @@ import (
 )
 
 func contentRoutes(r *mux.Router) {
-	r.HandleFunc("/content/new", handleNewArticle).Methods("GET")
-	r.HandleFunc("/content/new", handleNewArticlePost).Methods("POST")
-	r.HandleFunc("/content/articles/{id}", handleReadArticle)
-	r.HandleFunc("/content/manage", handleManageArticle)
-	r.HandleFunc("/content/manage/update/{id}", handleUpdateArticle).Methods("GET")
-	r.HandleFunc("/content/manage/update/{id}", handleUpdateArticlePost).Methods("POST")
-	r.HandleFunc("/content/manage/delete/{id}", handleDeleteArticlePost).Methods("POST")
+	r.HandleFunc("/content/new", user(authenticated(handleNewArticle))).Methods("GET")
+	r.HandleFunc("/content/new", user(authenticated(handleNewArticlePost))).Methods("POST")
+	r.HandleFunc("/content/articles/{id}", authenticated(handleReadArticle)).Methods("GET")
+	r.HandleFunc("/content/manage", admin(authenticated(handleManageArticle))).Methods("GET")
+	r.HandleFunc("/content/manage/update/{id}", admin(authenticated(handleUpdateArticle))).Methods("GET")
+	r.HandleFunc("/content/manage/update/{id}", admin(authenticated(handleUpdateArticlePost))).Methods("POST")
+	r.HandleFunc("/content/manage/delete/{id}", admin(authenticated(handleDeleteArticlePost))).Methods("POST")
 }
 
-func handleNewArticle(w http.ResponseWriter, r *http.Request) {
+func handleNewArticle(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
 	fmt.Println("new article")
 
-	usr, contentType := checkLoggedIn(w, r)
-	tmpl := make(map[string]interface{})
-	tmpl["user"] = usr
 	tmpl["date"] = time.Now().Format(time.RFC850)
-	templates, err := getDefaultGuestTemplate(contentType, path.Join("tmpl", "content", "new.gohtml"))
+	templates, err := getDefaultGuestTemplate(creds["perm"].(string), path.Join("tmpl", "content", "new.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
 		fmt.Println(err.Error())
@@ -36,7 +33,7 @@ func handleNewArticle(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "default_template", tmpl)
 }
 
-func handleNewArticlePost(w http.ResponseWriter, r *http.Request) {
+func handleNewArticlePost(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
 
 	payload := gmbh.NewPayload()
 	payload.Append("title", r.FormValue("title"))
@@ -60,10 +57,7 @@ func handleNewArticlePost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleReadArticle(w http.ResponseWriter, r *http.Request) {
-
-	usr, contentType := checkLoggedIn(w, r)
-
+func handleReadArticle(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
 	vars := mux.Vars(r)
 	fmt.Println(vars["id"])
 	id := vars["id"]
@@ -74,13 +68,10 @@ func handleReadArticle(w http.ResponseWriter, r *http.Request) {
 
 	e := result.GetPayload().GetAsString("error")
 	article := result.GetPayload().Get("data")
-
-	tmpl := make(map[string]interface{})
-	tmpl["user"] = usr
 	tmpl["err"] = e
 	tmpl["article"] = article
 
-	templates, err := getDefaultGuestTemplate(contentType, path.Join("tmpl", "content", "read.gohtml"))
+	templates, err := getDefaultGuestTemplate(creds["perm"].(string), path.Join("tmpl", "content", "read.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
 		fmt.Println(err.Error())
@@ -89,22 +80,14 @@ func handleReadArticle(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "default_template", tmpl)
 }
 
-func handleManageArticle(w http.ResponseWriter, r *http.Request) {
+func handleManageArticle(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
 
-	usr, contentType := checkLoggedIn(w, r)
-	if contentType != admin {
-		http.Redirect(w, r, "/", 301)
-		return
-	}
-	tmpl := make(map[string]interface{})
-	tmpl["user"] = usr
-
-	articles, e := getArticles("headline", 10)
+	articles, e := getArticles("headline", false, 10)
 	tmpl["articles"] = articles
 	tmpl["error"] = e
 	tmpl["content"] = true
 
-	templates, err := getAdminTemplate(contentType, path.Join("tmpl", "content", "manage.gohtml"))
+	templates, err := getAdminTemplate(creds["perm"].(string), path.Join("tmpl", "content", "manage.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
 		fmt.Println(err.Error())
@@ -113,13 +96,7 @@ func handleManageArticle(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "admin_template", tmpl)
 }
 
-func handleUpdateArticle(w http.ResponseWriter, r *http.Request) {
-	usr, contentType := checkLoggedIn(w, r)
-	if contentType != admin {
-		http.Redirect(w, r, "/", 301)
-		return
-	}
-
+func handleUpdateArticle(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
 	vars := mux.Vars(r)
 	fmt.Println(vars["id"])
 	id := vars["id"]
@@ -131,14 +108,12 @@ func handleUpdateArticle(w http.ResponseWriter, r *http.Request) {
 	e := result.GetPayload().GetAsString("error")
 	article := result.GetPayload().Get("data")
 
-	tmpl := make(map[string]interface{})
-	tmpl["user"] = usr
 	tmpl["err"] = e
 	tmpl["article"] = article
 	tmpl["width"] = 11
 	tmpl["content"] = true
 
-	templates, err := getAdminTemplate(contentType, path.Join("tmpl", "content", "update.gohtml"))
+	templates, err := getAdminTemplate(creds["perm"].(string), path.Join("tmpl", "content", "update.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
 		fmt.Println(err.Error())
@@ -147,12 +122,7 @@ func handleUpdateArticle(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "admin_template", tmpl)
 }
 
-func handleUpdateArticlePost(w http.ResponseWriter, r *http.Request) {
-	_, contentType := checkLoggedIn(w, r)
-	if contentType != admin {
-		http.Redirect(w, r, "/", 301)
-		return
-	}
+func handleUpdateArticlePost(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
 
 	vars := mux.Vars(r)
 
@@ -179,12 +149,7 @@ func handleUpdateArticlePost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleDeleteArticlePost(w http.ResponseWriter, r *http.Request) {
-	_, contentType := checkLoggedIn(w, r)
-	if contentType != admin {
-		http.Redirect(w, r, "/", 301)
-		return
-	}
+func handleDeleteArticlePost(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
 	vars := mux.Vars(r)
 	payload := gmbh.NewPayload()
 	payload.Append("id", vars["id"])

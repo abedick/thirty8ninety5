@@ -13,14 +13,6 @@ import (
 var store = sessions.NewCookieStore([]byte(os.Getenv("RAILWAYSTORE")))
 var tmpSecret = os.Getenv("RAILWAYAUTH")
 
-type content int
-
-const (
-	guest content = iota
-	user
-	admin
-)
-
 func attachCookie(w *http.ResponseWriter, r *http.Request, token string) error {
 	session, err := store.Get(r, "railway")
 	if err != nil {
@@ -47,7 +39,7 @@ func getToken(r *http.Request) (string, error) {
 	return token.(string), nil
 }
 
-func DestroyToken(w http.ResponseWriter, r *http.Request) error {
+func destroyToken(w http.ResponseWriter, r *http.Request) error {
 	session, err := store.Get(r, "railway")
 	if err != nil {
 		return errors.New("Could not create a new sesion," + err.Error())
@@ -56,23 +48,6 @@ func DestroyToken(w http.ResponseWriter, r *http.Request) error {
 	session.Options.MaxAge = -1
 	session.Save(r, w)
 	return nil
-}
-
-func checkLoggedIn(w http.ResponseWriter, r *http.Request) (interface{}, content) {
-	tknStr, err := getToken(r)
-	if err != nil {
-		return nil, guest
-	}
-	valid, claims := validateToken(tknStr)
-	if !valid {
-		return nil, guest
-	}
-	if claims["perm"] == "user" {
-		return claims, user
-	} else if claims["perm"] == "admin" {
-		return claims, admin
-	}
-	return claims, guest
 }
 
 func validateToken(tokenString string) (bool, map[string]interface{}) {

@@ -38,50 +38,19 @@ func main() {
 	contentRoutes(r)
 	accountRoutes(r)
 
-	r.HandleFunc("/", handleIndex).Methods("GET")
-	r.HandleFunc("/manage", handleManage).Methods("GET")
+	r.HandleFunc("/", authenticated(handleIndex)).Methods("GET")
+	r.HandleFunc("/manage", admin(authenticated(handleManage))).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(PORT, r))
 }
 
-func handleIndex(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("incoming request")
-	usr, contentType := checkLoggedIn(w, r)
-	tmpl := make(map[string]interface{})
-	tmpl["user"] = usr
+func handleIndex(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
 
-	payload := gmbh.NewPayload()
-	payload.Append("range", "10")
-	payload.Append("active", "true")
-	result, err := client.MakeRequest("content", "readMany", payload)
-	if err == nil {
-		tmpl["error"] = result.GetPayload().GetAsString("error")
-		rawArticles := result.GetPayload().Get("articles")
-		arrayArticles, ok := rawArticles.([]interface{})
-		if ok {
-			sort.SliceStable(arrayArticles, func(i, j int) bool {
-				ti, err := time.Parse(time.RFC850, arrayArticles[i].(map[string]interface{})["date"].(string))
-				if err != nil {
-					return false
-				}
-				tj, err := time.Parse(time.RFC850, arrayArticles[j].(map[string]interface{})["date"].(string))
-				if err != nil {
-					return false
-				}
-				if ti.After(tj) {
-					return true
-				}
-				return false
-			})
-			tmpl["articles"] = arrayArticles
-		} else {
-			fmt.Println("issues with articles")
-		}
-	} else {
-		tmpl["error"] = "internal server error"
-	}
+	articles, errstr := getArticles("", true, 10)
+	tmpl["error"] = errstr
+	tmpl["articles"] = articles
 
-	templates, err := getDefaultGuestTemplate(contentType, path.Join("tmpl", "index.gohtml"))
+	templates, err := getDefaultGuestTemplate(creds["perm"].(string), path.Join("tmpl", "index.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
 		fmt.Println(err.Error())
@@ -90,17 +59,10 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "default_template", tmpl)
 }
 
-func handleManage(w http.ResponseWriter, r *http.Request) {
-	usr, contentType := checkLoggedIn(w, r)
-	if contentType != admin {
-		http.Redirect(w, r, "/", 301)
-		return
-	}
-	tmpl := make(map[string]interface{})
-	tmpl["user"] = usr
+func handleManage(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
 	tmpl["index"] = true
 
-	templates, err := getAdminTemplate(contentType, path.Join("tmpl", "admin", "index.gohtml"))
+	templates, err := getAdminTemplate("admin", path.Join("tmpl", "admin", "index.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
 		fmt.Println(err.Error())
@@ -109,15 +71,15 @@ func handleManage(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "admin_template", tmpl)
 }
 
-func getDefaultGuestTemplate(display content, filenames ...string) (*template.Template, error) {
+func getDefaultGuestTemplate(display string, filenames ...string) (*template.Template, error) {
 
 	files := append([]string{path.Join("tmpl", "default.gohtml")},
 		filenames...)
 
 	switch display {
-	case admin:
+	case "admin":
 		files = append(files, path.Join("tmpl", "nav.admin.gohtml"))
-	case user:
+	case "user":
 		files = append(files, path.Join("tmpl", "nav.user.gohtml"))
 	default:
 		files = append(files, path.Join("tmpl", "nav.guest.gohtml"))
@@ -126,15 +88,15 @@ func getDefaultGuestTemplate(display content, filenames ...string) (*template.Te
 	return template.ParseFiles(files...)
 }
 
-func getAdminTemplate(display content, filenames ...string) (*template.Template, error) {
+func getAdminTemplate(display string, filenames ...string) (*template.Template, error) {
 
 	files := append([]string{path.Join("tmpl", "admin", "layout.gohtml")},
 		filenames...)
 
 	switch display {
-	case admin:
+	case "admin":
 		files = append(files, path.Join("tmpl", "nav.admin.gohtml"))
-	case user:
+	case "user":
 		files = append(files, path.Join("tmpl", "nav.user.gohtml"))
 	default:
 		files = append(files, path.Join("tmpl", "nav.guest.gohtml"))
@@ -146,10 +108,13 @@ func getAdminTemplate(display content, filenames ...string) (*template.Template,
 // getArticles makes a request through gmbh to the content server to retrieve
 // num articles from the database and then they are sorted by time, newest
 // first
-func getArticles(t string, num int) ([]interface{}, string) {
+func getArticles(typ string, active bool, num int) ([]interface{}, string) {
 	payload := gmbh.NewPayload()
 	payload.Append("range", num)
-	payload.Append("type", t)
+	if active {
+		payload.Append("active", "true")
+	}
+	payload.Append("type", typ)
 	result, err := client.MakeRequest("content", "readMany", payload)
 
 	e := ""
@@ -181,6 +146,5 @@ func getArticles(t string, num int) ([]interface{}, string) {
 	} else {
 		e = "internal server error"
 	}
-
 	return articles, e
 }
