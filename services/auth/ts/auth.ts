@@ -2,6 +2,7 @@ var gmbh = require('gmbh');
 var passwordHash = require('password-hash');
 var MongoClient = require('mongodb').MongoClient;
 var jwt = require('jsonwebtoken');
+var shortid = require('shortid');
 
 var client: any;
 var mongoUsers: any;
@@ -26,6 +27,11 @@ function main(){
     
     client.Route("grant", grantAuth);
     client.Route("register", register);
+
+    client.Route("read", read);
+    client.Route("readMany", readMany);
+    client.Route("update", update);
+    client.Route("delete", del);
 
     client.Start().then(()=>{
         console.log("gmbh started");
@@ -69,6 +75,7 @@ async function register(sender: string, request: any) {
     let result = await new Promise<any>((resolve:any,reject:any)=>{
         let user = request.get('user');
         let email = request.get('email');
+        let time = request.get('time');
         let pass = passwordHash.generate(request.get('pass'));
         mongoUsers.findOne({username:user}, (err:any, item:any)=>{
             if(err != null){
@@ -77,7 +84,7 @@ async function register(sender: string, request: any) {
                 resolve(["error","user already exists"]);
             } else {
                 // add user to database
-                let usr = createUser(user,email,pass);
+                let usr = createUser(user,email,pass,time);
                 mongoUsers.insertOne(usr, (err:any, item:any)=>{
                     if(err != null){
                         resolve(["error","internal server error: 2"]);
@@ -93,6 +100,80 @@ async function register(sender: string, request: any) {
     return p;
 }
 
+async function read(sender: string, request: any){
+    let action = await new Promise<any>((resolve:any, reject:any)=>{
+        let id = request.get("id");
+        mongoUsers.findOne({id:id}, (err:any, result:any)=>{
+            if(err != null){
+                resolve(["error","internal server error: 1"]);
+                return;
+            }
+            delete result._id;
+            delete result.password;
+            resolve(["account", result]);
+        });
+    });
+    let p = new gmbh.payload();
+    p.append(action[0], action[1]);
+    return p;
+}
+
+async function readMany(sender: string, request: any){
+    let action = await new Promise<any>((resolve:any, reject:any)=>{
+        let num = request.get("range");
+        mongoUsers.find({},{projection:{_id: 0, password:0}}).toArray( (err:any, result:any)=>{
+            if(err != null){
+                resolve(["error","internal server error: 1"]);
+                return;
+            }
+            resolve(["users", result]);
+        });
+    });
+    let p = new gmbh.payload();
+    p.append(action[0], action[1]);
+    return p;
+}
+
+
+async function update(sender: string, request: any){
+    let action = await new Promise<any>((resolve:any, reject:any)=>{
+        let id = request.get("id");
+        let email = request.get("email");
+        let perm = request.get("perm");
+        mongoUsers.updateOne({id:id}, {$set: {email:email, perm:perm, active: true}}, (err:any, res:any)=>{
+            if(err != null){
+                console.log(err);
+                resolve(["error","internal server error: 3"]);
+                return;
+            }
+            resolve(["data","success"]);
+        });
+    });
+    let p = new gmbh.payload();
+    p.append(action[0], action[1]);
+    return p;
+}
+
+async function del(sender: string, request: any){
+    let action = await new Promise<any>( (resolve:any, reject:any)=>{
+        let id = request.get("id");
+        if(id == ""){
+            resolve(["error", "id must not be empty"]);
+            return;
+        }
+        mongoUsers.updateOne({id:id}, {$set: {active:false}}, (err:any, res:any)=>{
+            if(err != null){
+                console.log(err);
+                resolve(["error","internal server error: 3"]);
+                return; 
+            }
+        });
+        resolve(["data","success"]);
+    });
+    let p = new gmbh.payload();
+    p.append(action[0], action[1]);
+    return p;
+}
 
 function generateToken(user:any): string {
     let str = jwt.sign({
@@ -105,14 +186,15 @@ function generateToken(user:any): string {
     return str;
 }
 
-function createUser(user:string, email:string, passHash:string): object {
-    let t = new Date();
+function createUser(user:string, email:string, passHash:string, time:string): object {
     return {
+        id: shortid.generate(),
+        active: true,
         username: user,
         password: passHash,
         email: email,
-        created: t.toString(),
-        updated: t.toString(),
+        created: time,
+        updated: time,
         perm: "user",
     };
 }

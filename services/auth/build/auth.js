@@ -38,6 +38,7 @@ var gmbh = require('gmbh');
 var passwordHash = require('password-hash');
 var MongoClient = require('mongodb').MongoClient;
 var jwt = require('jsonwebtoken');
+var shortid = require('shortid');
 var client;
 var mongoUsers;
 var MongoURL = "mongodb://localhost:27017";
@@ -55,6 +56,10 @@ function main() {
     client.opts.runtime.verbose = false;
     client.Route("grant", grantAuth);
     client.Route("register", register);
+    client.Route("read", read);
+    client.Route("readMany", readMany);
+    client.Route("update", update);
+    client.Route("delete", del);
     client.Start().then(function () {
         console.log("gmbh started");
     });
@@ -111,6 +116,7 @@ function register(sender, request) {
                 case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
                         var user = request.get('user');
                         var email = request.get('email');
+                        var time = request.get('time');
                         var pass = passwordHash.generate(request.get('pass'));
                         mongoUsers.findOne({ username: user }, function (err, item) {
                             if (err != null) {
@@ -121,7 +127,7 @@ function register(sender, request) {
                             }
                             else {
                                 // add user to database
-                                var usr_1 = createUser(user, email, pass);
+                                var usr_1 = createUser(user, email, pass, time);
                                 mongoUsers.insertOne(usr_1, function (err, item) {
                                     if (err != null) {
                                         resolve(["error", "internal server error: 2"]);
@@ -142,6 +148,112 @@ function register(sender, request) {
         });
     });
 }
+function read(sender, request) {
+    return __awaiter(this, void 0, void 0, function () {
+        var action, p;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
+                        var id = request.get("id");
+                        mongoUsers.findOne({ id: id }, function (err, result) {
+                            if (err != null) {
+                                resolve(["error", "internal server error: 1"]);
+                                return;
+                            }
+                            delete result._id;
+                            delete result.password;
+                            resolve(["account", result]);
+                        });
+                    })];
+                case 1:
+                    action = _a.sent();
+                    p = new gmbh.payload();
+                    p.append(action[0], action[1]);
+                    return [2 /*return*/, p];
+            }
+        });
+    });
+}
+function readMany(sender, request) {
+    return __awaiter(this, void 0, void 0, function () {
+        var action, p;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
+                        var num = request.get("range");
+                        mongoUsers.find({}, { projection: { _id: 0, password: 0 } }).toArray(function (err, result) {
+                            if (err != null) {
+                                resolve(["error", "internal server error: 1"]);
+                                return;
+                            }
+                            resolve(["users", result]);
+                        });
+                    })];
+                case 1:
+                    action = _a.sent();
+                    p = new gmbh.payload();
+                    p.append(action[0], action[1]);
+                    return [2 /*return*/, p];
+            }
+        });
+    });
+}
+function update(sender, request) {
+    return __awaiter(this, void 0, void 0, function () {
+        var action, p;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
+                        var id = request.get("id");
+                        var email = request.get("email");
+                        var perm = request.get("perm");
+                        mongoUsers.updateOne({ id: id }, { $set: { email: email, perm: perm, active: true } }, function (err, res) {
+                            if (err != null) {
+                                console.log(err);
+                                resolve(["error", "internal server error: 3"]);
+                                return;
+                            }
+                            resolve(["data", "success"]);
+                        });
+                    })];
+                case 1:
+                    action = _a.sent();
+                    p = new gmbh.payload();
+                    p.append(action[0], action[1]);
+                    return [2 /*return*/, p];
+            }
+        });
+    });
+}
+function del(sender, request) {
+    return __awaiter(this, void 0, void 0, function () {
+        var action, p;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
+                        var id = request.get("id");
+                        if (id == "") {
+                            resolve(["error", "id must not be empty"]);
+                            return;
+                        }
+                        mongoUsers.updateOne({ id: id }, { $set: { active: false } }, function (err, res) {
+                            if (err != null) {
+                                console.log(err);
+                                resolve(["error", "internal server error: 3"]);
+                                return;
+                            }
+                        });
+                        resolve(["data", "success"]);
+                    })];
+                case 1:
+                    action = _a.sent();
+                    p = new gmbh.payload();
+                    p.append(action[0], action[1]);
+                    return [2 /*return*/, p];
+            }
+        });
+    });
+}
 function generateToken(user) {
     var str = jwt.sign({
         exp: Math.floor(Date.now() / 1000) + (60 * 60),
@@ -152,14 +264,15 @@ function generateToken(user) {
     }, tmpSecret);
     return str;
 }
-function createUser(user, email, passHash) {
-    var t = new Date();
+function createUser(user, email, passHash, time) {
     return {
+        id: shortid.generate(),
+        active: true,
         username: user,
         password: passHash,
         email: email,
-        created: t.toString(),
-        updated: t.toString(),
+        created: time,
+        updated: time,
         perm: "user",
     };
 }

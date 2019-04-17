@@ -88,3 +88,7 @@ body{
     /* background-color: #26547C; */
     background-color: #3273ff;
 }
+
+.manage-nav{
+    border-right: 1px solid #bbbbbb;
+}

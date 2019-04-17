@@ -36,14 +36,10 @@ func main() {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	contentRoutes(r)
-
-	r.HandleFunc("/login", handleLogin).Methods("GET")
-	r.HandleFunc("/login", handleLoginPost).Methods("POST")
-	r.HandleFunc("/register", handleRegister).Methods("GET")
-	r.HandleFunc("/register", handleRegisterPost).Methods("POST")
-	r.HandleFunc("/logout", handleLogout).Methods("GET")
+	accountRoutes(r)
 
 	r.HandleFunc("/", handleIndex).Methods("GET")
+	r.HandleFunc("/manage", handleManage).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(PORT, r))
 }
@@ -94,9 +90,45 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "default_template", tmpl)
 }
 
+func handleManage(w http.ResponseWriter, r *http.Request) {
+	usr, contentType := checkLoggedIn(w, r)
+	if contentType != admin {
+		http.Redirect(w, r, "/", 301)
+		return
+	}
+	tmpl := make(map[string]interface{})
+	tmpl["user"] = usr
+	tmpl["index"] = true
+
+	templates, err := getAdminTemplate(contentType, path.Join("tmpl", "admin", "index.gohtml"))
+	if err != nil {
+		http.Error(w, "500 Internal Server Error, parsing", 500)
+		fmt.Println(err.Error())
+		return
+	}
+	templates.ExecuteTemplate(w, "admin_template", tmpl)
+}
+
 func getDefaultGuestTemplate(display content, filenames ...string) (*template.Template, error) {
 
 	files := append([]string{path.Join("tmpl", "default.gohtml")},
+		filenames...)
+
+	switch display {
+	case admin:
+		files = append(files, path.Join("tmpl", "nav.admin.gohtml"))
+	case user:
+		files = append(files, path.Join("tmpl", "nav.user.gohtml"))
+	default:
+		files = append(files, path.Join("tmpl", "nav.guest.gohtml"))
+	}
+
+	return template.ParseFiles(files...)
+}
+
+func getAdminTemplate(display content, filenames ...string) (*template.Template, error) {
+
+	files := append([]string{path.Join("tmpl", "admin", "layout.gohtml")},
 		filenames...)
 
 	switch display {

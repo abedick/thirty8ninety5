@@ -227,6 +227,7 @@ function deleteArticles(sender, request) {
         var p;
         return __generator(this, function (_a) {
             p = new gmbh.payload();
+            p.append("error", "unimp");
             return [2 /*return*/, p];
         });
     });
@@ -243,6 +244,7 @@ function formalizeUpdatedArticle(article, newTime, newBody, newTags, newTitle) {
 function formalizeArticle(date, lastUpdate, authors, title, tags, body, revisions) {
     return {
         id: shortid.generate(),
+        active: true,
         date: date,
         lastUpdate: lastUpdate,
         authors: authors,
@@ -250,6 +252,5 @@ function formalizeArticle(date, lastUpdate, authors, title, tags, body, revision
         tags: tags,
         body: body,
         revisions: revisions,
-        active: true,
     };
 }

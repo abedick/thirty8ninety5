@@ -13,12 +13,9 @@ import (
 func contentRoutes(r *mux.Router) {
 	r.HandleFunc("/content/new", handleNewArticle).Methods("GET")
 	r.HandleFunc("/content/new", handleNewArticlePost).Methods("POST")
-
 	r.HandleFunc("/content/articles/{id}", handleReadArticle)
-
 	r.HandleFunc("/content/manage", handleManageArticle)
 	r.HandleFunc("/content/manage/update/{id}", handleUpdateArticle).Methods("GET")
-
 	r.HandleFunc("/content/manage/update/{id}", handleUpdateArticlePost).Methods("POST")
 	r.HandleFunc("/content/manage/delete/{id}", handleDeleteArticlePost).Methods("POST")
 }
@@ -105,14 +102,15 @@ func handleManageArticle(w http.ResponseWriter, r *http.Request) {
 	articles, e := getArticles("headline", 10)
 	tmpl["articles"] = articles
 	tmpl["error"] = e
+	tmpl["content"] = true
 
-	templates, err := getDefaultGuestTemplate(contentType, path.Join("tmpl", "content", "manage.gohtml"))
+	templates, err := getAdminTemplate(contentType, path.Join("tmpl", "content", "manage.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
 		fmt.Println(err.Error())
 		return
 	}
-	templates.ExecuteTemplate(w, "default_template", tmpl)
+	templates.ExecuteTemplate(w, "admin_template", tmpl)
 }
 
 func handleUpdateArticle(w http.ResponseWriter, r *http.Request) {
@@ -137,14 +135,16 @@ func handleUpdateArticle(w http.ResponseWriter, r *http.Request) {
 	tmpl["user"] = usr
 	tmpl["err"] = e
 	tmpl["article"] = article
+	tmpl["width"] = 11
+	tmpl["content"] = true
 
-	templates, err := getDefaultGuestTemplate(contentType, path.Join("tmpl", "content", "update.gohtml"))
+	templates, err := getAdminTemplate(contentType, path.Join("tmpl", "content", "update.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
 		fmt.Println(err.Error())
 		return
 	}
-	templates.ExecuteTemplate(w, "default_template", tmpl)
+	templates.ExecuteTemplate(w, "admin_template", tmpl)
 }
 
 func handleUpdateArticlePost(w http.ResponseWriter, r *http.Request) {

@@ -1,3 +1,114 @@
+
+function _deleteAccount(id: string){
+    if(!id){
+        console.error("could not parse id");
+        return;
+    }
+    let errorBox = document.getElementById('error-box');
+    if(errorBox != null){
+        errorBox.style.display = 'none';
+    }
+    let error = (msg:string)=>{
+        if(errorBox != null){
+            errorBox.style.display = 'block';
+            errorBox.innerHTML = msg;
+        }
+    };
+    let successBox = document.getElementById('success-box');
+    if(successBox != null){
+        successBox.style.display = 'none';
+    }
+    let success = (msg:string)=>{
+        if(successBox != null){
+            successBox.style.display = 'block';
+            successBox.innerHTML = msg + "<hr>";
+        }
+    };
+
+    // @ts-ignore
+    $.ajax({
+        type: 'POST',
+        url: '/accounts/manage/delete/'+id,
+    }).done((data:any)=>{
+        console.log(data);
+        try {
+            let pdata = JSON.parse(data);
+            if(pdata.error){
+                error(pdata.error);
+            } else {
+                let activeBox = document.getElementById("account-active");
+                if(activeBox != null){
+                    activeBox.setAttribute("placeholder", "false");
+                }
+                success("Marked account as inactive");
+            }
+        } catch {
+            error("could not contact server");
+        }
+    }).fail((data:any)=>{
+        error("could not contact server");
+    });
+}
+
+function _updateAccount(id: string){
+    if(!id){
+        console.error("could not parse id");
+        return;
+    }
+    let errorBox = document.getElementById('error-box');
+    if(errorBox != null){
+        errorBox.style.display = 'none';
+    }
+    let error = (msg:string)=>{
+        if(errorBox != null){
+            errorBox.style.display = 'block';
+            errorBox.innerHTML = msg;
+        }
+    };
+
+    let email: any = document.getElementById('account-email');
+    let perm: any = document.getElementById('account-perm');
+
+    if(email == undefined || email.value == ""){
+        error("Email must not be blank.");
+        return;
+    }
+    email = email.value;
+
+    if(perm == undefined || perm.value == ""){
+        error("Email must not be blank.");
+        return;
+    }
+    perm = perm.value;
+
+    // @ts-ignore
+    $.ajax({
+        type: 'POST',
+        url: '/accounts/manage/update/'+id,
+        data: {
+            email: email,
+            perm: perm,
+        },
+    }).done((data:any)=>{
+        console.log(data);
+        try {
+            let pdata = JSON.parse(data);
+            if(pdata.error){
+                error(pdata.error);
+            } else {
+                window.location.href = "/accounts/manage";
+                console.log("success");
+            }
+        } catch {
+            error("could not contact server");
+            console.log("data1");
+        }
+    }).fail((data:any)=>{
+        console.log(data);
+        error("could not contact server");
+    });
+}
+
 function _deleteContent(id: string){
     if(!id){
         console.log("could not parse id");
@@ -275,7 +386,7 @@ function _login(){
     // @ts-ignore
     $.ajax({
         type: 'POST',
-        url: '/login',
+        url: '/accounts/login/auth',
         beforeSend: (xhr:any)=>{ 
             xhr.setRequestHeader('Authorization',authStr); 
         },
@@ -374,7 +485,7 @@ function _register(){
     // @ts-ignore
     $.ajax({
         type: 'POST',
-        url: '/register',
+        url: '/accounts/register/new',
         data: {
             user: uname,
             email: email,

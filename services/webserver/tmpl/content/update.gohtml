@@ -1,10 +1,12 @@
 {{ define "body_content" }}
 <div class="row justify-content-center lg-row">
+  {{ if .width }}
+  <div class="col-{{.width}}">
+  {{ else }}
   <div class="col-8">
-    <div class="a-card-title">
-        <h3 class="b-title">&nbsp;&nbsp;Update Article</h3>
-    </div>
-    <div id="card-{{.id}}" class="a-card">
+  {{ end }}
+    <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;Update Article</h3>
+    <div id="card-{{.id}}" class="card">
       <div id="article-box" class="card-body">
         <form id="article-form">
           <div class="input-group mb-3">
@@ -56,15 +58,14 @@
             <textarea rows="10" class="form-control" aria-label="With textarea" id="article-body">{{ .article.body }}</textarea>
             </div>
           </form>
-        <hr>
+      </div>
+    </div>
         <div id="success-box" style="display:'none';" class="success-msg"></div>
         <div id="error-box" style="display:'none';" class="error-msg"></div>
         <div class="row">
             <div class="col-6"><button onclick="_updateContent('{{ .article.id }}')" class="nav-bg btn-block btn-lg btn-primary">Update</button></div>
             <div class="col-6"><button onclick="_deleteContent('{{ .article.id }}')" class="nav-bg btn-block btn-lg btn-primary">Delete</button></div>
         </div>
-      </div>
-    </div>
   </div>
 </div>
 {{ end }}

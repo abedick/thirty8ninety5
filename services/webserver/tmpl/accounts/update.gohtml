@@ -1,0 +1,71 @@
+{{ define "body_content" }}
+<div class="row justify-content-center lg-row">
+  <div class="col-11">
+    <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;Update Account Details</h3>
+    <div id="card-{{.id}}" class="card">
+      <div id="account-box" class="card-body">
+      {{ if .account }}
+        <form id="account-form">
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="account-id-title">ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            </div>
+            <input type="text" class="form-control" placeholder="{{ .account.id }}" aria-label="id" aria-describedby="article-active-title" id="account-id" disabled>
+          </div>
+
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="article-username-title">Username</span>
+            </div>
+            <input type="text" class="form-control" placeholder="{{ .account.username }}" aria-label="Username" aria-describedby="article-active-title" id="account-username" disabled>
+          </div>
+
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="article-tags-title">Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            </div>
+            <input type="text" class="form-control" value="{{ .account.email }}" aria-label="perm" aria-describedby="article-tags-title" id="account-email">
+          </div>
+
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="article-active-title">Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            </div>
+            <input type="text" class="form-control" placeholder="{{ .account.active }}" aria-label="Username" aria-describedby="article-active-title" id="article-active" disabled>
+          </div>
+
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="article-date-title">Created&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            </div>
+            <input type="text" class="form-control" placeholder="{{ .account.created }}" aria-label="Username" aria-describedby="article-date-title" id="article-date" disabled>
+          </div>
+
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="article-tags-title">Permissions</span>
+            </div>
+            <input type="text" class="form-control" value="{{ .account.perm }}" aria-label="perm" aria-describedby="article-tags-title" id="account-perm">
+          </div>
+
+          </form>
+        {{ else }}
+            Could not find an account with the speficied ID.
+        {{ end }}
+      </div>
+    </div>
+        {{ if .account }}
+            <div id="success-box" style="display:'none';" class="success-msg"></div>
+            <div id="error-box" style="display:'none';" class="error-msg"></div>
+            <div class="row">
+                <div class="col-6"><button onclick="_updateAccount('{{ .account.id }}')" class="nav-bg btn-block btn-lg btn-primary">Update</button></div>
+                {{ if .account.active }}
+                  <div class="col-6"><button onclick="_deleteAccount('{{ .account.id }}')" class="nav-bg btn-block btn-lg btn-primary">Delete</button></div>
+                {{ else }}
+                  <div class="col-6"><button onclick="_deleteAccount('{{ .account.id }}')" class="btn-secondary btn-block btn-lg btn-primary" disabled>Delete</button></div>
+                {{ end }}
+            </div>
+        {{ end }}
+  </div>
+</div>
+{{ end }}

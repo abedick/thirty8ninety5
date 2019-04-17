@@ -172,6 +172,7 @@ async function deleteArticle(sender: string, request: any){
 
 async function deleteArticles(sender: string, request: any){
     let p = new gmbh.payload();
+    p.append("error", "unimp");
     return p;
 }
 
@@ -196,6 +197,7 @@ function formalizeArticle(
 
     return {
         id: shortid.generate(),
+        active: true,
         date: date,
         lastUpdate: lastUpdate,
         authors: authors,
@@ -203,6 +205,5 @@ function formalizeArticle(
         tags: tags,
         body: body,
         revisions: revisions,
-        active: true,
     };
 }

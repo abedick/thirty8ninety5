@@ -1,0 +1,53 @@
+{{ define "admin_template" }}
+<!doctype html>
+
+</head>
+    <title>Thirty-8 Ninety-5</title>
+
+    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/default.css">
+    
+</head>
+<body>
+
+    {{ template "nav" . }}
+
+    <div class="container">
+    <br>
+    <br>
+    <br>
+        <div class="row">
+            <div class="col-3 manage-nav">
+                <div class="nav flex-column nav-pills" aria-orientation="vertical">
+                    {{ if .index }}
+                        <a class="nav-link active" id="manage-home" href="/manage">Manage</a>
+                    {{ else }}
+                        <a class="nav-link" id="manage-home" href="/manage">Manage</a>
+                    {{ end }}
+                    {{ if .content }}
+                        <a class="nav-link active" id="manage-content" href="/content/manage">Content</a>
+                    {{ else }}
+                        <a class="nav-link" id="manage-content" href="/content/manage">Content</a>
+                    {{ end }}
+                    {{ if .users }}
+                        <a class="nav-link active" id="manage-users"href="/accounts/manage">Accounts</a>
+                    {{ else }}
+                        <a class="nav-link" id="manage-users"href="/accounts/manage">Accounts</a>
+                    {{ end }}
+                </div>
+            </div>
+
+            <div class="col-9">
+                {{ template "body_content" . }}
+            </div>
+        </div>
+    
+    </div>
+
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/railway.js"></script>
+    {{ if .script }}
+        <script>{{ .script }}</script>
+    {{ end }}
+</body>
+{{ end }}
