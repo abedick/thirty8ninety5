@@ -45,6 +45,7 @@ func main() {
 }
 
 func handleIndex(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
+	tmpl["title"] = "Home"
 
 	articles, errstr := getArticles("", true, 10)
 	tmpl["error"] = errstr
@@ -60,6 +61,7 @@ func handleIndex(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]
 }
 
 func handleManage(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
+	tmpl["title"] = "Manage"
 	tmpl["index"] = true
 
 	templates, err := getAdminTemplate("admin", path.Join("tmpl", "admin", "index.gohtml"))

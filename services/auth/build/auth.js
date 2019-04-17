@@ -160,9 +160,14 @@ function read(sender, request) {
                                 resolve(["error", "internal server error: 1"]);
                                 return;
                             }
-                            delete result._id;
-                            delete result.password;
-                            resolve(["account", result]);
+                            if (result && result._id) {
+                                delete result._id;
+                                delete result.password;
+                                resolve(["account", result]);
+                            }
+                            else {
+                                resolve(["error", "not found"]);
+                            }
                         });
                     })];
                 case 1:

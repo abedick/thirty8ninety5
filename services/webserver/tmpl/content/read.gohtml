@@ -1,3 +1,17 @@
 {{ define "body_content" }}
-{{ template "article" .article }}
+    {{ if .article }}
+        {{ template "article" .article }}
+    {{ else }}
+        <div id="row" class="row justify-content-center lg-row">
+        <div id="col" class="col-8">
+            <div id="card-title" class="a-card-title">
+                <h3 id="card-title" class="b-title">&nbsp;&nbsp;Article not found</h3>
+            </div>
+            <div id="card" class="a-card">
+            <div id="card-body" class="card-body">
+            </div>
+            </div>
+        </div>
+        </div>
+    {{end}}
 {{ end }}

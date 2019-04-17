@@ -6,9 +6,8 @@ import (
 	"path"
 	"time"
 
-	"github.com/gorilla/mux"
-
 	"github.com/gmbh-micro/gmbh"
+	"github.com/gorilla/mux"
 )
 
 func accountRoutes(r *mux.Router) {
@@ -24,6 +23,7 @@ func accountRoutes(r *mux.Router) {
 }
 
 func handleAccountsManage(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
+	tmpl["title"] = "Manage"
 	tmpl["users"] = true
 	payload := gmbh.NewPayload()
 	payload.Append("range", 10)
@@ -83,18 +83,21 @@ func handleAccountsUpdatePost(w http.ResponseWriter, r *http.Request, creds, tmp
 }
 
 func handleAccountsUpdate(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
+	tmpl["title"] = "Manage"
 	vars := mux.Vars(r)
 	id := vars["id"]
 
 	payload := gmbh.NewPayload()
 	payload.Append("id", id)
-	result, _ := client.MakeRequest("auth", "read", payload)
-
-	e := result.GetPayload().GetAsString("error")
-	account := result.GetPayload().Get("account")
-
-	tmpl["err"] = e
-	tmpl["account"] = account
+	result, err := client.MakeRequest("auth", "read", payload)
+	if err != nil {
+		tmpl["err"] = err.Error()
+	} else {
+		e := result.GetPayload().Get("error")
+		account := result.GetPayload().Get("account")
+		tmpl["err"] = e
+		tmpl["account"] = account
+	}
 	tmpl["users"] = true
 
 	templates, err := getAdminTemplate(creds["perm"].(string), path.Join("tmpl", "accounts", "update.gohtml"))
@@ -106,6 +109,7 @@ func handleAccountsUpdate(w http.ResponseWriter, r *http.Request, creds, tmpl ma
 }
 
 func handleLogin(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
+	tmpl["title"] = "Login"
 	templates, err := getDefaultGuestTemplate(creds["perm"].(string), path.Join("tmpl", "accounts", "login.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
@@ -146,6 +150,7 @@ func handleLoginPost(w http.ResponseWriter, r *http.Request, creds, tmpl map[str
 }
 
 func handleRegister(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
+	tmpl["title"] = "Register"
 	templates, err := getDefaultGuestTemplate(creds["perm"].(string), path.Join("tmpl", "accounts", "register.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)

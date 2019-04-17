@@ -21,8 +21,7 @@ func contentRoutes(r *mux.Router) {
 }
 
 func handleNewArticle(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
-	fmt.Println("new article")
-
+	tmpl["title"] = "New Article"
 	tmpl["date"] = time.Now().Format(time.RFC850)
 	templates, err := getDefaultGuestTemplate(creds["perm"].(string), path.Join("tmpl", "content", "new.gohtml"))
 	if err != nil {
@@ -58,6 +57,7 @@ func handleNewArticlePost(w http.ResponseWriter, r *http.Request, creds, tmpl ma
 }
 
 func handleReadArticle(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
+
 	vars := mux.Vars(r)
 	fmt.Println(vars["id"])
 	id := vars["id"]
@@ -71,6 +71,13 @@ func handleReadArticle(w http.ResponseWriter, r *http.Request, creds, tmpl map[s
 	tmpl["err"] = e
 	tmpl["article"] = article
 
+	a, ok := article.(map[string]interface{})
+	if !ok {
+		tmpl["title"] = ""
+	} else {
+		tmpl["title"] = a["title"]
+	}
+
 	templates, err := getDefaultGuestTemplate(creds["perm"].(string), path.Join("tmpl", "content", "read.gohtml"))
 	if err != nil {
 		http.Error(w, "500 Internal Server Error, parsing", 500)
@@ -81,6 +88,7 @@ func handleReadArticle(w http.ResponseWriter, r *http.Request, creds, tmpl map[s
 }
 
 func handleManageArticle(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
+	tmpl["title"] = "Manage"
 
 	articles, e := getArticles("headline", false, 10)
 	tmpl["articles"] = articles
@@ -97,6 +105,7 @@ func handleManageArticle(w http.ResponseWriter, r *http.Request, creds, tmpl map
 }
 
 func handleUpdateArticle(w http.ResponseWriter, r *http.Request, creds, tmpl map[string]interface{}) {
+	tmpl["title"] = "Manage"
 	vars := mux.Vars(r)
 	fmt.Println(vars["id"])
 	id := vars["id"]

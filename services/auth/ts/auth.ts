@@ -108,9 +108,13 @@ async function read(sender: string, request: any){
                 resolve(["error","internal server error: 1"]);
                 return;
             }
-            delete result._id;
-            delete result.password;
-            resolve(["account", result]);
+            if(result && result._id){
+                delete result._id;
+                delete result.password;
+                resolve(["account", result]);
+            } else {
+                resolve(["error", "not found"]);
+            }
         });
     });
     let p = new gmbh.payload();
