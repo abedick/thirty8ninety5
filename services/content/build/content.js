@@ -113,7 +113,6 @@ function readArticle(sender, request) {
                 case 1:
                     action = _a.sent();
                     p = new gmbh.payload();
-                    console.log(action);
                     p.append(action[0], action[1]);
                     return [2 /*return*/, p];
             }
@@ -126,11 +125,23 @@ function readArticles(sender, request) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
-                        mongoArticles.find({}, {
-                            projection: {
-                                _id: 0,
-                                revisions: 0,
-                            }
+                        var num = request.get("range");
+                        var type = request.get("type");
+                        var active = request.get("active");
+                        var std = {
+                            _id: 0,
+                            revisions: 0,
+                        };
+                        if (type == "headline") {
+                            std["body"] = 0;
+                            std["revisions"] = 0;
+                        }
+                        var a = {};
+                        if (active == "true") {
+                            a = { active: true };
+                        }
+                        mongoArticles.find(a, {
+                            projection: std,
                         }).toArray(function (err, result) {
                             if (err != null) {
                                 resolve(["error", "internal server error: 1"]);
@@ -150,19 +161,64 @@ function readArticles(sender, request) {
 }
 function updateArticle(sender, request) {
     return __awaiter(this, void 0, void 0, function () {
-        var p;
+        var action, p;
         return __generator(this, function (_a) {
-            p = new gmbh.payload();
-            return [2 /*return*/, p];
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
+                        var id = request.get("id");
+                        mongoArticles.findOne({ id: id }, function (err, item) {
+                            if (err != null) {
+                                resolve(["error", "internal server error: 1"]);
+                                return;
+                            }
+                            else if (item && item.id) {
+                                var updatedArticle = formalizeUpdatedArticle(item, request.get("date"), request.get("body"), request.get("tags"), request.get("title"));
+                                mongoArticles.updateOne({ id: id }, { $set: updatedArticle }, function (err, res) {
+                                    if (err != null) {
+                                        console.log(err);
+                                        resolve(["error", "internal server error: 3"]);
+                                        return;
+                                    }
+                                    resolve(["data", "success"]);
+                                });
+                            }
+                            else {
+                                resolve(["error", "internal server error: 2"]);
+                                return;
+                            }
+                        });
+                    })];
+                case 1:
+                    action = _a.sent();
+                    p = new gmbh.payload();
+                    p.append(action[0], action[1]);
+                    return [2 /*return*/, p];
+            }
         });
     });
 }
 function deleteArticle(sender, request) {
     return __awaiter(this, void 0, void 0, function () {
-        var p;
+        var action, p;
         return __generator(this, function (_a) {
-            p = new gmbh.payload();
-            return [2 /*return*/, p];
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
+                        var id = request.get("id");
+                        mongoArticles.updateOne({ id: id }, { $set: { active: false } }, function (err, res) {
+                            if (err != null) {
+                                console.log(err);
+                                resolve(["error", "internal server error: 3"]);
+                                return;
+                            }
+                            resolve(["data", "success"]);
+                        });
+                    })];
+                case 1:
+                    action = _a.sent();
+                    p = new gmbh.payload();
+                    p.append(action[0], action[1]);
+                    return [2 /*return*/, p];
+            }
         });
     });
 }
@@ -175,6 +231,15 @@ function deleteArticles(sender, request) {
         });
     });
 }
+function formalizeUpdatedArticle(article, newTime, newBody, newTags, newTitle) {
+    article.title = newTitle;
+    article.tags = newTags;
+    article.lastUpdate = newTime;
+    article.revisions.push(article.body);
+    article.body = newBody;
+    article.active = true;
+    return article;
+}
 function formalizeArticle(date, lastUpdate, authors, title, tags, body, revisions) {
     return {
         id: shortid.generate(),
@@ -185,5 +250,6 @@ function formalizeArticle(date, lastUpdate, authors, title, tags, body, revision
         tags: tags,
         body: body,
         revisions: revisions,
+        active: true,
     };
 }

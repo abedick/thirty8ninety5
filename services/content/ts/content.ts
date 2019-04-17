@@ -78,18 +78,33 @@ async function readArticle(sender: string, request: any){
         });
     });
     let p = new gmbh.payload();
-    console.log(action);
     p.append(action[0], action[1]);
     return p;
 }
 
 async function readArticles(sender: string, request: any){
     let action = await new Promise<any>((resolve:any, reject:any)=>{
-        mongoArticles.find({}, {
-            projection: {
-                _id: 0,
-                revisions: 0,
-            }
+        let num = request.get("range");
+        let type = request.get("type");
+        let active = request.get("active");
+
+        let std: any = {
+            _id: 0,
+            revisions: 0,
+        }
+
+        if(type == "headline"){
+            std["body"] = 0;
+            std["revisions"] = 0;
+        }
+
+        let a = {};
+        if(active == "true"){
+            a = {active:true};
+        }
+
+        mongoArticles.find(a, {
+            projection: std,
         }).toArray((err:any, result:any)=>{
             if(err != null){
                 resolve(["error","internal server error: 1"]);
@@ -104,18 +119,70 @@ async function readArticles(sender: string, request: any){
 }
 
 async function updateArticle(sender: string, request: any){
+    let action = await new Promise<any>((resolve:any, reject:any)=>{
+        let id = request.get("id");
+        mongoArticles.findOne({id:id}, (err:any, item:any)=>{
+            if(err != null){
+                resolve(["error","internal server error: 1"]);
+                return;
+            } else if(item && item.id){
+                let updatedArticle = formalizeUpdatedArticle(
+                    item,
+                    request.get("date"),
+                    request.get("body"),
+                    request.get("tags"),
+                    request.get("title"),
+                    );
+                
+                mongoArticles.updateOne({id:id}, {$set: updatedArticle}, (err:any, res:any)=>{
+                    if(err != null){
+                        console.log(err);
+                        resolve(["error","internal server error: 3"]);
+                        return;
+                    }
+                    resolve(["data","success"]);
+                });
+            } else {
+                resolve(["error","internal server error: 2"]);
+                return;
+            }
+        });
+    });
     let p = new gmbh.payload();
+    p.append(action[0], action[1]);
     return p;
 }
 
 async function deleteArticle(sender: string, request: any){
+    let action = await new Promise<any>((resolve:any, reject:any)=>{
+        let id = request.get("id");
+        mongoArticles.updateOne({id:id}, {$set: {active: false}}, (err:any, res:any)=>{
+            if(err != null){
+                console.log(err);
+                resolve(["error","internal server error: 3"]);
+                return;
+            }
+            resolve(["data","success"]);
+        });
+    });
     let p = new gmbh.payload();
+    p.append(action[0], action[1]);
     return p;
 }
 
 async function deleteArticles(sender: string, request: any){
     let p = new gmbh.payload();
     return p;
+}
+
+function formalizeUpdatedArticle(article: any, newTime: string, newBody: string, newTags: string, newTitle: string){
+    article.title = newTitle;
+    article.tags = newTags;
+    article.lastUpdate = newTime;
+    article.revisions.push(article.body);
+    article.body = newBody;
+    article.active = true;
+    return article;
 }
 
 function formalizeArticle(
@@ -136,5 +203,6 @@ function formalizeArticle(
         tags: tags,
         body: body,
         revisions: revisions,
+        active: true,
     };
 }

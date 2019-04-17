@@ -1,4 +1,136 @@
 "use strict";
+function _deleteContent(id) {
+    if (!id) {
+        console.log("could not parse id");
+        return;
+    }
+    var errorBox = document.getElementById('error-box');
+    if (errorBox != null) {
+        errorBox.style.display = 'none';
+    }
+    var error = function (msg) {
+        if (errorBox != null) {
+            errorBox.style.display = 'block';
+            errorBox.innerHTML = msg;
+        }
+    };
+    var successBox = document.getElementById('success-box');
+    if (successBox != null) {
+        successBox.style.display = 'none';
+    }
+    var success = function (msg) {
+        if (successBox != null) {
+            successBox.style.display = 'block';
+            successBox.innerHTML = msg + "<hr>";
+        }
+    };
+    // @ts-ignore
+    $.ajax({
+        type: 'POST',
+        url: '/content/manage/delete/' + id,
+    }).done(function (data) {
+        console.log(data);
+        try {
+            var pdata = JSON.parse(data);
+            if (pdata.error) {
+                error(pdata.error);
+            }
+            else {
+                var activeBox = document.getElementById("article-active");
+                if (activeBox != null) {
+                    activeBox.setAttribute("placeholder", "false");
+                }
+                success("Marked article as inactive");
+            }
+        }
+        catch (_a) {
+            error("could not contact server");
+        }
+    }).fail(function (data) {
+        error("could not contact server");
+    });
+}
+function _updateContent(id) {
+    console.log(id);
+    var form = document.getElementById("article-form");
+    var errorBox = document.getElementById('error-box');
+    if (errorBox != null) {
+        errorBox.style.display = 'none';
+    }
+    var box = document.getElementById("article-box");
+    var error = function (msg) {
+        if (errorBox != null) {
+            errorBox.style.display = 'block';
+            errorBox.innerHTML = msg;
+        }
+        // if(box != null){ box.removeChild(loading); }
+        if (form != null) {
+            form.style.display = 'block';
+        }
+    };
+    var title = document.getElementById('article-title');
+    var date = document.getElementById('article-date');
+    var author = document.getElementById('article-author');
+    var tags = document.getElementById('article-tags');
+    var body = document.getElementById('article-body');
+    if (title == undefined || title.value == "") {
+        error("Title must not be blank.");
+        return;
+    }
+    title = title.value;
+    if (date == undefined || date.placeholder == "") {
+        console.log(date.placeholder);
+        error("Date must not be blank.");
+        return;
+    }
+    date = date.placeholder;
+    if (author == undefined || author.placeholder == "") {
+        error("Author must not be blank.");
+        return;
+    }
+    author = author.placeholder;
+    if (tags == undefined || tags.value == "") {
+        error("Tags must not be blank.");
+        return;
+    }
+    tags = tags.value;
+    if (body == undefined || body.value == "") {
+        error("Body must not be blank.");
+        return;
+    }
+    body = body.value;
+    // @ts-ignore
+    $.ajax({
+        type: 'POST',
+        url: '/content/manage/update/' + id,
+        data: {
+            title: title,
+            date: date,
+            author: author,
+            tags: tags,
+            body: body,
+        },
+    }).done(function (data) {
+        console.log(data);
+        try {
+            var pdata = JSON.parse(data);
+            if (pdata.error) {
+                error(pdata.error);
+            }
+            else {
+                window.location.href = "/content/manage";
+                console.log("success");
+            }
+        }
+        catch (_a) {
+            error("could not contact server");
+            console.log("data1");
+        }
+    }).fail(function (data) {
+        console.log(data);
+        error("could not contact server");
+    });
+}
 //_submitContent handles new content requests
 function _submitContent() {
     console.log("new content submission");
@@ -68,7 +200,7 @@ function _submitContent() {
                 error(pdata.error);
             }
             else {
-                // window.location.href = "/";
+                window.location.href = "/";
                 console.log("success");
             }
         }

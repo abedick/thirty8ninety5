@@ -1,10 +1,11 @@
 {{ define "body_content" }}
-
-<div class="row justify-content-center">
-  <div class="col-10">
-    <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;New Article</h3>
-    <div class="card">
-      <div class="card-body" id="article-box">
+<div class="row justify-content-center lg-row">
+  <div class="col-8">
+    <div class="a-card-title">
+        <h3 class="b-title">&nbsp;&nbsp;New Article</h3>
+    </div>
+    <div id="card-{{.id}}" class="a-card">
+      <div id="article-box" class="card-body">
         <form id="article-form">
           <div class="input-group mb-3">
             <div class="input-group-prepend">
@@ -41,13 +42,11 @@
             <textarea rows="10" class="form-control" aria-label="With textarea" id="article-body"></textarea>
             </div>
           </form>
-        </div>
+        <hr>
+        <div id="error-box" style="display:'none';" class="error-msg"></div>
+        <button onclick="_submitContent()" class="nav-bg btn-block btn-lg btn-primary">Submit</button>
       </div>
-
-      <br>
-      <div id="error-box" style="display:'none';" class="error-msg"></div>
-      <button onclick="_submitContent()" class="btn-info btn-block btn-lg btn-primary">Submit</button>
-
     </div>
+  </div>
 </div>
 {{ end }}

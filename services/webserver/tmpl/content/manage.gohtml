@@ -1,0 +1,35 @@
+{{ define "body_content" }}
+  <div class="row justify-content-center">
+    <div class="col-10">
+      <h3 class="card-title">&nbsp;&nbsp;&nbsp;&nbsp;Manage Articles</h3>
+      <div class="card">
+        <div class="card-body" id="register-box">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Title</th>
+              <th scope="col">Published</th>
+              <th scope="col">Authors</th>
+              <th scope="col">Active</th>
+              <th scope="col">Tags</th>
+            </tr>
+            </thead>
+            <tbody>
+              {{ range $key, $value := .articles }}
+                <tr>
+                  <td>{{ $value.id }}</td>
+                  <td><a href="/content/manage/update/{{ $value.id }}">{{ $value.title }}</a></td>
+                  <td>{{ $value.date }}</td>
+                  <td>{{ $value.authors }}</td>
+                  <td>{{ $value.active }}</td>
+                  <td>{{ $value.tags }}</td>
+                </tr>
+              {{end }}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{{ end }}

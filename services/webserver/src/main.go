@@ -56,6 +56,7 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 
 	payload := gmbh.NewPayload()
 	payload.Append("range", "10")
+	payload.Append("active", "true")
 	result, err := client.MakeRequest("content", "readMany", payload)
 	if err == nil {
 		tmpl["error"] = result.GetPayload().GetAsString("error")
@@ -108,4 +109,46 @@ func getDefaultGuestTemplate(display content, filenames ...string) (*template.Te
 	}
 
 	return template.ParseFiles(files...)
+}
+
+// getArticles makes a request through gmbh to the content server to retrieve
+// num articles from the database and then they are sorted by time, newest
+// first
+func getArticles(t string, num int) ([]interface{}, string) {
+	payload := gmbh.NewPayload()
+	payload.Append("range", num)
+	payload.Append("type", t)
+	result, err := client.MakeRequest("content", "readMany", payload)
+
+	e := ""
+	articles := make([]interface{}, 0)
+
+	if err == nil {
+		e = result.GetPayload().GetAsString("error")
+		rawArticles := result.GetPayload().Get("articles")
+		arrayArticles, ok := rawArticles.([]interface{})
+		if ok {
+			sort.SliceStable(arrayArticles, func(i, j int) bool {
+				ti, err := time.Parse(time.RFC850, arrayArticles[i].(map[string]interface{})["date"].(string))
+				if err != nil {
+					return false
+				}
+				tj, err := time.Parse(time.RFC850, arrayArticles[j].(map[string]interface{})["date"].(string))
+				if err != nil {
+					return false
+				}
+				if ti.After(tj) {
+					return true
+				}
+				return false
+			})
+			articles = arrayArticles
+		} else {
+			fmt.Println("issues with articles")
+		}
+	} else {
+		e = "internal server error"
+	}
+
+	return articles, e
 }

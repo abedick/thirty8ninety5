@@ -1,0 +1,70 @@
+{{ define "body_content" }}
+<div class="row justify-content-center lg-row">
+  <div class="col-8">
+    <div class="a-card-title">
+        <h3 class="b-title">&nbsp;&nbsp;Update Article</h3>
+    </div>
+    <div id="card-{{.id}}" class="a-card">
+      <div id="article-box" class="card-body">
+        <form id="article-form">
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="article-title-title">Title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            </div>
+            <input type="text" class="form-control" value="{{ .article.title }}" aria-label="articleTitle" aria-describedby="article-title-title" id="article-title">
+          </div>
+
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="article-active-title">Active&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            </div>
+            <input type="text" class="form-control" placeholder="{{ .article.active }}" aria-label="Username" aria-describedby="article-active-title" id="article-active" disabled>
+          </div>
+
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="article-date-title">Date&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            </div>
+            <input type="text" class="form-control" placeholder="{{ .article.date }}" aria-label="Username" aria-describedby="article-date-title" id="article-date" disabled>
+          </div>
+          
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="article-update-title">Update</span>
+            </div>
+            <input type="text" class="form-control" placeholder="{{ .article.lastUpdate }}" aria-label="Username" aria-describedby="article-date-title" id="article-update" disabled>
+          </div>
+
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="article-author-title">Author</span>
+            </div>
+            <input type="text" class="form-control" placeholder=" {{ .article.authors }}" aria-label="Username" aria-describedby="article-author-title" id="article-author" disabled>
+          </div>
+
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="article-tags-title">Tags&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            </div>
+            <input type="text" class="form-control" value="{{ .article.tags }}" aria-label="Username" aria-describedby="article-tags-title" id="article-tags">
+          </div>
+
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Body&nbsp;&nbsp;&nbsp;</span>
+            </div>
+            <textarea rows="10" class="form-control" aria-label="With textarea" id="article-body">{{ .article.body }}</textarea>
+            </div>
+          </form>
+        <hr>
+        <div id="success-box" style="display:'none';" class="success-msg"></div>
+        <div id="error-box" style="display:'none';" class="error-msg"></div>
+        <div class="row">
+            <div class="col-6"><button onclick="_updateContent('{{ .article.id }}')" class="nav-bg btn-block btn-lg btn-primary">Update</button></div>
+            <div class="col-6"><button onclick="_deleteContent('{{ .article.id }}')" class="nav-bg btn-block btn-lg btn-primary">Delete</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{ end }}

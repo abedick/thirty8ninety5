@@ -31,6 +31,35 @@
 {{ define "article" }}
 <div id="row-{{.id}}" class="row justify-content-center lg-row">
   <div id="col-{{.id}}" class="col-8">
+    <div id="card-title-{{.id}}" class="a-card-title">
+        <h3 id="card-title-{{.id}}" class="a-title">&nbsp;&nbsp;{{.title}}</h3>
+        <div class="row">
+          <div class="col-6 a-date">
+            <small>{{.date}}</small>
+          </div>
+          <div class="col-6 text-right a-author">
+            <small>By: {{.authors}}</small>
+          </div>
+        </div>
+    </div>
+    <div id="card-{{.id}}" class="a-card">
+      <div id="card-body-{{.id}}" class="card-body">
+        <div>
+          {{.body}}
+        </div>
+        <hr>
+        <div class="text-right">
+          <small><a href="/content/articles/{{.id}}">permalink</a></small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{ end }}
+
+{{ define "old_article" }}
+<div id="row-{{.id}}" class="row justify-content-center lg-row">
+  <div id="col-{{.id}}" class="col-8">
     <h3 id="card-title-{{.id}}" class="card-title">&nbsp;&nbsp;{{.title}}</h3>
     <div id="card-{{.id}}" class="card">
       <div id="card-body-{{.id}}" class="card-body">
