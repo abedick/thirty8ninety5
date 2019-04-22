@@ -5,7 +5,7 @@ var shortid = require('shortid');
 var client: any;
 var mongoArticles: any;
 
-const MongoURL = "mongodb://localhost:27017";
+const MongoURL = process.env.MONGOURL != undefined ? process.env.MONGOURL : "";
 const MongoDB = "gmbh";
 const MongoCollection = "articles";
 
@@ -50,7 +50,6 @@ async function createArticle(sender: string, request: any){
             request.get('body'),
             [""],
         );
-        console.log(article);
         mongoArticles.insertOne(article, (err:any, item:any)=>{
             if(err != null){
                 resolve(["error","internal server error: 1"]);

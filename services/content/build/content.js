@@ -39,7 +39,7 @@ var MongoClient = require('mongodb').MongoClient;
 var shortid = require('shortid');
 var client;
 var mongoArticles;
-var MongoURL = "mongodb://localhost:27017";
+var MongoURL = process.env.MONGOURL != undefined ? process.env.MONGOURL : "";
 var MongoDB = "gmbh";
 var MongoCollection = "articles";
 function main() {
@@ -72,7 +72,6 @@ function createArticle(sender, request) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
                         var article = formalizeArticle(request.get('date'), request.get('date'), request.get('author'), request.get('title'), request.get('tags'), request.get('body'), [""]);
-                        console.log(article);
                         mongoArticles.insertOne(article, function (err, item) {
                             if (err != null) {
                                 resolve(["error", "internal server error: 1"]);

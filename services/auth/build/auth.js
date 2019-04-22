@@ -41,10 +41,10 @@ var jwt = require('jsonwebtoken');
 var shortid = require('shortid');
 var client;
 var mongoUsers;
-var MongoURL = "mongodb://localhost:27017";
+var MongoURL = process.env.MONGOURL != undefined ? process.env.MONGOURL : "";
 var MongoDB = "gmbh";
 var MongoCollection = "user_accounts";
-var tmpSecret = process.env.RAILWAYAUTH;
+var tmpSecret = process.env.RAILWAYAUTH != undefined ? process.env.RAILWAYAUTH : "";
 function main() {
     console.log("starting auth server");
     if (tmpSecret == "") {
@@ -53,7 +53,7 @@ function main() {
     }
     client = new gmbh.gmbh();
     client.opts.service.name = "auth";
-    client.opts.runtime.verbose = false;
+    client.opts.runtime.verbose = true;
     client.Route("grant", grantAuth);
     client.Route("register", register);
     client.Route("read", read);
@@ -65,6 +65,7 @@ function main() {
     });
     MongoClient.connect(MongoURL, { useNewUrlParser: true }, function (err, client) {
         if (err != null) {
+            console.log("error connecting to mongo");
             console.log(err);
             return;
         }

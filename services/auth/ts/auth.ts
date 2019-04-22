@@ -7,11 +7,11 @@ var shortid = require('shortid');
 var client: any;
 var mongoUsers: any;
 
-const MongoURL = "mongodb://localhost:27017";
+const MongoURL = process.env.MONGOURL != undefined ? process.env.MONGOURL : "";
 const MongoDB = "gmbh";
 const MongoCollection = "user_accounts";
 
-var tmpSecret = process.env.RAILWAYAUTH;
+var tmpSecret = process.env.RAILWAYAUTH != undefined ? process.env.RAILWAYAUTH : "";
 
 function main(){
     console.log("starting auth server");
@@ -23,7 +23,7 @@ function main(){
 
     client = new gmbh.gmbh();
     client.opts.service.name = "auth";
-    client.opts.runtime.verbose = false;
+    client.opts.runtime.verbose = true;
     
     client.Route("grant", grantAuth);
     client.Route("register", register);
@@ -39,6 +39,7 @@ function main(){
 
     MongoClient.connect(MongoURL, { useNewUrlParser: true },(err:any, client:any) => {
         if(err != null){
+            console.log("error connecting to mongo");
             console.log(err);
             return;
         } 
