@@ -37,10 +37,14 @@ function main(){
         console.log("gmbh started");
     });
 
+    mongoConnect();
+}
+
+function mongoConnect(){
     MongoClient.connect(MongoURL, { useNewUrlParser: true },(err:any, client:any) => {
         if(err != null){
             console.log("error connecting to mongo");
-            console.log(err);
+            setTimeout(mongoConnect, 5000);
             return;
         } 
         console.log("mongo started");

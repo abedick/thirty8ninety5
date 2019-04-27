@@ -63,10 +63,13 @@ function main() {
     client.Start().then(function () {
         console.log("gmbh started");
     });
+    mongoConnect();
+}
+function mongoConnect() {
     MongoClient.connect(MongoURL, { useNewUrlParser: true }, function (err, client) {
         if (err != null) {
             console.log("error connecting to mongo");
-            console.log(err);
+            setTimeout(mongoConnect, 5000);
             return;
         }
         console.log("mongo started");

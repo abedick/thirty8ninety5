@@ -27,15 +27,20 @@ function main(){
         console.log("gmbh started");
     });
 
+
+    mongoConnect();
+}
+
+function mongoConnect(){
     MongoClient.connect(MongoURL, { useNewUrlParser: true },(err:any, client:any) => {
         if(err != null){
-            console.log(err);
+            console.log("error connecting to mongo");
+            setTimeout(mongoConnect, 5000);
             return;
         } 
         console.log("mongo started");
         mongoArticles = client.db(MongoDB).collection(MongoCollection);
     });
-
 }
 main();
 
